@@ -15,3 +15,52 @@ test.sqlite
 \#*\#
 *~
 *.swp
+
+# Lexicon generated files
+lexicons/**/*.json
+src/lexicon/types/**/*.ts
+packages/*/src/lexicon/types/**/*.ts
+
+# Generated API files
+packages/*/src/api/**/*.ts
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo
+.eslintcache
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+temp/
+_tmp*/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Sentry
+.sentryclirc
+
+# Development files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

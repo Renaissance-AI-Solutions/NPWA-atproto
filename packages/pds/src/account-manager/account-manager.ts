@@ -180,6 +180,13 @@ export class AccountManager {
       ? await scrypt.genSaltAndHash(password)
       : undefined
 
+    console.log('=== ACCOUNT CREATION DEBUG START ===');
+    console.log('Creating account with password:', password);
+    console.log('Scrypt hash:', passwordScrypt);
+    console.log('Password provided:', !!password);
+    console.log('PasswordScrypt generated:', !!passwordScrypt);
+    console.log('=== ACCOUNT CREATION DEBUG END ===');
+
     const now = new Date().toISOString()
     await this.db.transaction(async (dbTxn) => {
       if (inviteCode) {
@@ -362,7 +369,10 @@ export class AccountManager {
   }> {
     const start = Date.now()
     try {
+      console.log('=== LOGIN DEBUG START ===');
+      console.log('Login attempt for:', identifier, 'with password:', password);
       const identifierNormalized = identifier.toLowerCase()
+      console.log('Normalized identifier:', identifierNormalized);
 
       const user = identifierNormalized.includes('@')
         ? await this.getAccountByEmail(identifierNormalized, {
@@ -375,26 +385,44 @@ export class AccountManager {
           })
 
       if (!user) {
+        console.log('ERROR: User not found for identifier:', identifierNormalized);
         throw new AuthRequiredError('Invalid identifier or password')
       }
+
+      console.log('User found:', {
+        did: user.did,
+        handle: user.handle,
+        email: user.email
+      });
+
       const isSoftDeleted = softDeleted(user)
+      console.log('Is soft deleted:', isSoftDeleted);
 
       let appPassword: password.AppPassDescript | null = null
+      console.log('Attempting to verify account password...');
       const validAccountPass = await this.verifyAccountPassword(
         user.did,
         password,
       )
+      console.log('Account password verification result:', validAccountPass);
+
       if (!validAccountPass) {
+        console.log('Account password verification failed, checking app password...');
         // takendown/suspended accounts cannot login with app password
         if (isSoftDeleted) {
+          console.log('Account is soft deleted, cannot use app password');
           throw new AuthRequiredError('Invalid identifier or password')
         }
         appPassword = await this.verifyAppPassword(user.did, password)
+        console.log('App password verification result:', appPassword);
         if (appPassword === null) {
+          console.log('ERROR: Both account and app password verification failed');
           throw new AuthRequiredError('Invalid identifier or password')
         }
       }
 
+      console.log('Login successful for user:', user.did);
+      console.log('=== LOGIN DEBUG END ===');
       return { user, appPassword, isSoftDeleted }
     } finally {
       // Mitigate timing attacks

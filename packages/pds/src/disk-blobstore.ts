@@ -9,12 +9,17 @@ import { BlobNotFoundError, BlobStore } from '@atproto/repo'
 import { httpLogger as log } from './logger'
 
 export class DiskBlobStore implements BlobStore {
+  private safeDid: string
+
   constructor(
     public did: string,
     public location: string,
     public tmpLocation: string,
     public quarantineLocation: string,
-  ) {}
+  ) {
+    // URL encode the DID to make it safe for Windows file paths (colons become %3A)
+    this.safeDid = encodeURIComponent(did)
+  }
 
   static creator(
     location: string,
@@ -29,15 +34,15 @@ export class DiskBlobStore implements BlobStore {
   }
 
   private async ensureDir() {
-    await fs.mkdir(path.join(this.location, this.did), { recursive: true })
+    await fs.mkdir(path.join(this.location, this.safeDid), { recursive: true })
   }
 
   private async ensureTemp() {
-    await fs.mkdir(path.join(this.tmpLocation, this.did), { recursive: true })
+    await fs.mkdir(path.join(this.tmpLocation, this.safeDid), { recursive: true })
   }
 
   private async ensureQuarantine() {
-    await fs.mkdir(path.join(this.quarantineLocation, this.did), {
+    await fs.mkdir(path.join(this.quarantineLocation, this.safeDid), {
       recursive: true,
     })
   }
@@ -47,15 +52,15 @@ export class DiskBlobStore implements BlobStore {
   }
 
   getTmpPath(key: string): string {
-    return path.join(this.tmpLocation, this.did, key)
+    return path.join(this.tmpLocation, this.safeDid, key)
   }
 
   getStoredPath(cid: CID): string {
-    return path.join(this.location, this.did, cid.toString())
+    return path.join(this.location, this.safeDid, cid.toString())
   }
 
   getQuarantinePath(cid: CID): string {
-    return path.join(this.quarantineLocation, this.did, cid.toString())
+    return path.join(this.quarantineLocation, this.safeDid, cid.toString())
   }
 
   async hasTemp(key: string): Promise<boolean> {

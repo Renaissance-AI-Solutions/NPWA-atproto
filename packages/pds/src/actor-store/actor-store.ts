@@ -31,7 +31,9 @@ export class ActorStore {
 
   async getLocation(did: string) {
     const didHash = await crypto.sha256Hex(did)
-    const directory = path.join(this.cfg.directory, didHash.slice(0, 2), did)
+    // URL encode the DID to make it safe for Windows file paths (colons become %3A)
+    const safeDid = encodeURIComponent(did)
+    const directory = path.join(this.cfg.directory, didHash.slice(0, 2), safeDid)
     const dbLocation = path.join(directory, `store.sqlite`)
     const keyLocation = path.join(directory, `key`)
     return { directory, dbLocation, keyLocation }

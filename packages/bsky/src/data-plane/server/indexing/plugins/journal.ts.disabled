@@ -1,0 +1,143 @@
+import { Insertable, Selectable } from 'kysely'
+import { CID } from 'multiformats/cid'
+import { AtUri, normalizeDatetimeAlways } from '@atproto/syntax'
+import { BackgroundQueue } from '../../background' 
+import { Database } from '../../db'
+import { DatabaseSchema, DatabaseSchemaType } from '../../db/database-schema'
+import { RecordProcessor } from '../processor'
+
+const lexId = 'app.warlog.journal'
+type IndexedJournal = Selectable<DatabaseSchemaType['journal_entry']>
+
+// Simple type for journal record based on lexicon
+interface JournalRecord {
+  text: string
+  entryType: 'real_time' | 'backdated'
+  incidentTimestamp?: string
+  location?: {
+    latitude: number
+    longitude: number
+    accuracy?: number
+    address?: string
+  }
+  symptoms?: Array<{
+    category: string
+    subcategory?: string
+    severity: number
+    duration?: string
+    notes?: string
+  }>
+  evidenceUris?: string[]
+  sources?: Array<{
+    url: string
+    title: string
+    description?: string
+    accessedAt?: string
+  }>
+  tags?: string[]
+  isPrivate?: boolean
+  createdAt: string
+}
+
+const insertFn = async (
+  db: DatabaseSchema,
+  uri: AtUri,
+  cid: CID,
+  obj: JournalRecord,
+  timestamp: string,
+): Promise<IndexedJournal | null> => {
+  const journal = {
+    uri: uri.toString(),
+    cid: cid.toString(),
+    creator: uri.host,
+    text: obj.text,
+    entryType: obj.entryType,
+    incidentTimestamp: obj.incidentTimestamp ? normalizeDatetimeAlways(obj.incidentTimestamp) : null,
+    locationLat: obj.location?.latitude || null,
+    locationLng: obj.location?.longitude || null,
+    locationAccuracy: obj.location?.accuracy || null,
+    locationAddress: obj.location?.address || null,
+    symptoms: obj.symptoms && obj.symptoms.length > 0 ? JSON.stringify(obj.symptoms) : null,
+    evidenceUris: obj.evidenceUris && obj.evidenceUris.length > 0 ? JSON.stringify(obj.evidenceUris) : null,
+    sources: obj.sources && obj.sources.length > 0 ? JSON.stringify(obj.sources) : null,
+    tags: obj.tags && obj.tags.length > 0 ? JSON.stringify(obj.tags) : null,
+    isPrivate: obj.isPrivate || false,
+    createdAt: normalizeDatetimeAlways(obj.createdAt),
+    indexedAt: timestamp,
+  }
+
+  const [inserted] = await Promise.all([
+    db
+      .insertInto('journal_entry')
+      .values(journal)
+      .onConflict((oc) => oc.doNothing())
+      .returningAll()
+      .executeTakeFirst(),
+    db
+      .insertInto('feed_item')
+      .values({
+        type: 'journal',
+        uri: journal.uri,
+        cid: journal.cid,
+        postUri: journal.uri, // For journals, uri and postUri are the same (like posts)
+        originatorDid: journal.creator,
+        sortAt: journal.indexedAt < journal.createdAt ? journal.indexedAt : journal.createdAt,
+      })
+      .onConflict((oc) => oc.doNothing())
+      .executeTakeFirst(),
+  ])
+
+  return inserted || null
+}
+
+const findDuplicate = async (): Promise<AtUri | null> => {
+  return null
+}
+
+const deleteFn = async (
+  db: DatabaseSchema,
+  uri: AtUri,
+): Promise<IndexedJournal | null> => {
+  const uriStr = uri.toString()
+  const [deleted] = await Promise.all([
+    db
+      .deleteFrom('journal_entry')
+      .where('uri', '=', uriStr)
+      .returningAll()
+      .executeTakeFirst(),
+    db.deleteFrom('feed_item').where('uri', '=', uriStr).executeTakeFirst(),
+  ])
+  return deleted || null
+}
+
+const notifsForInsert = () => {
+  // Journals don't generate notifications currently
+  return []
+}
+
+const notifsForDelete = () => {
+  return { notifs: [], toDelete: [] }
+}
+
+const updateAggregates = async () => {
+  // No aggregates to update for journals currently
+}
+
+export type PluginType = RecordProcessor<JournalRecord, IndexedJournal>
+
+export const makePlugin = (
+  db: Database,
+  background: BackgroundQueue,
+): PluginType => {
+  return new RecordProcessor(db, background, {
+    lexId,
+    insertFn,
+    findDuplicate,
+    deleteFn,
+    notifsForInsert,
+    notifsForDelete,
+    updateAggregates,
+  })
+}
+
+export default makePlugin 

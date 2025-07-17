@@ -43,6 +43,8 @@ export interface Record {
   labels?: $Typed<ComAtprotoLabelDefs.SelfLabels> | { $type: string }
   /** Additional hashtags, in addition to any included in post text and facets. */
   tags?: string[]
+  /** References to global sources database entries that support claims in this post. */
+  sourceIds?: string[]
   /** Client-declared timestamp when this post was originally created. */
   createdAt: string
   [k: string]: unknown

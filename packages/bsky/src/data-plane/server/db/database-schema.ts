@@ -39,6 +39,7 @@ import * as threadgate from './tables/thread-gate'
 import * as threadMute from './tables/thread-mute'
 import * as verification from './tables/verification'
 import * as viewParam from './tables/view-param'
+// import * as journal from './tables/journal' // Temporarily disabled until migration is applied
 
 export type DatabaseSchemaType = duplicateRecord.PartialDB &
   profile.PartialDB &
@@ -80,5 +81,6 @@ export type DatabaseSchemaType = duplicateRecord.PartialDB &
   quote.PartialDB &
   verification.PartialDB &
   privateData.PartialDB
+  // & journal.PartialDB // Temporarily disabled until migration is applied
 
 export type DatabaseSchema = Kysely<DatabaseSchemaType>

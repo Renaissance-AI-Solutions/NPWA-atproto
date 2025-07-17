@@ -323,28 +323,38 @@ export const findBlobRefs = (
   return []
 }
 
-const CONSTRAINTS = {
-  [lex.ids.AppBskyActorProfile]: {
-    avatar:
-      lex.schemaDict.AppBskyActorProfile.defs.main.record.properties.avatar,
-    banner:
-      lex.schemaDict.AppBskyActorProfile.defs.main.record.properties.banner,
-  },
-  [lex.ids.AppBskyFeedGenerator]: {
-    avatar:
-      lex.schemaDict.AppBskyFeedGenerator.defs.main.record.properties.avatar,
-  },
-  [lex.ids.AppBskyGraphList]: {
-    avatar: lex.schemaDict.AppBskyGraphList.defs.main.record.properties.avatar,
-  },
-  [lex.ids.AppBskyFeedPost]: {
-    'embed/images/image':
-      lex.schemaDict.AppBskyEmbedImages.defs.image.properties.image,
-    'embed/external/thumb':
-      lex.schemaDict.AppBskyEmbedExternal.defs.external.properties.thumb,
-    'embed/media/images/image':
-      lex.schemaDict.AppBskyEmbedImages.defs.image.properties.image,
-    'embed/media/external/thumb':
-      lex.schemaDict.AppBskyEmbedExternal.defs.external.properties.thumb,
-  },
+// Safe constraints object that handles missing lexicon schemas
+const getConstraints = () => {
+  try {
+    return {
+      [lex.ids.AppBskyActorProfile]: {
+        avatar:
+          lex.schemaDict.AppBskyActorProfile?.defs?.main?.record?.properties?.avatar,
+        banner:
+          lex.schemaDict.AppBskyActorProfile?.defs?.main?.record?.properties?.banner,
+      },
+      [lex.ids.AppBskyFeedGenerator]: {
+        avatar:
+          lex.schemaDict.AppBskyFeedGenerator?.defs?.main?.record?.properties?.avatar,
+      },
+      [lex.ids.AppBskyGraphList]: {
+        avatar: lex.schemaDict.AppBskyGraphList?.defs?.main?.record?.properties?.avatar,
+      },
+      [lex.ids.AppBskyFeedPost]: {
+        'embed/images/image':
+          lex.schemaDict.AppBskyEmbedImages?.defs?.image?.properties?.image,
+        'embed/external/thumb':
+          lex.schemaDict.AppBskyEmbedExternal?.defs?.external?.properties?.thumb,
+        'embed/media/images/image':
+          lex.schemaDict.AppBskyEmbedImages?.defs?.image?.properties?.image,
+        'embed/media/external/thumb':
+          lex.schemaDict.AppBskyEmbedExternal?.defs?.external?.properties?.thumb,
+      },
+    }
+  } catch (error) {
+    console.warn('Lexicon schemas not fully loaded, using empty constraints:', error.message)
+    return {}
+  }
 }
+
+const CONSTRAINTS = getConstraints()

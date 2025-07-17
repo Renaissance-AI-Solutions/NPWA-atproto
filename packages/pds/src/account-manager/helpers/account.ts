@@ -135,6 +135,17 @@ export const registerAccount = async (
   },
 ) => {
   const { did, email, passwordScrypt } = opts
+
+  console.log('=== REGISTER ACCOUNT DEBUG START ===');
+  console.log('Registering account with:', {
+    did,
+    email: email.toLowerCase(),
+    hasPasswordScrypt: !!passwordScrypt,
+    passwordScryptLength: passwordScrypt?.length || 0,
+    passwordScryptFull: passwordScrypt,
+    passwordScryptIsEmpty: passwordScrypt === '' || passwordScrypt === null || passwordScrypt === undefined
+  });
+
   const [registered] = await db.executeWithRetry(
     db.db
       .insertInto('account')
@@ -146,9 +157,14 @@ export const registerAccount = async (
       .onConflict((oc) => oc.doNothing())
       .returning('did'),
   )
+
   if (!registered) {
+    console.log('ERROR: Failed to register account - user already exists');
     throw new UserAlreadyExistsError()
   }
+
+  console.log('Account registered successfully with DID:', registered.did);
+  console.log('=== REGISTER ACCOUNT DEBUG END ===');
 }
 
 export const deleteAccount = async (

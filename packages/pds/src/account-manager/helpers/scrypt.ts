@@ -6,8 +6,19 @@ export const OLD_PASSWORD_MAX_LENGTH = 512
 export const NEW_PASSWORD_MAX_LENGTH = 256
 
 export const genSaltAndHash = (password: string): Promise<string> => {
+  console.log('=== GENERATING SALT AND HASH DEBUG START ===');
+  console.log('Password to hash:', password);
+
   const salt = crypto.randomBytes(16).toString('hex')
-  return hashWithSalt(password, salt)
+  console.log('Generated salt:', salt);
+
+  const hashPromise = hashWithSalt(password, salt);
+  hashPromise.then(result => {
+    console.log('Generated hash result:', result);
+    console.log('=== GENERATING SALT AND HASH DEBUG END ===');
+  });
+
+  return hashPromise;
 }
 
 export const hashWithSalt = (
@@ -26,9 +37,42 @@ export const verify = async (
   password: string,
   storedHash: string,
 ): Promise<boolean> => {
-  const [salt, hash] = storedHash.split(':')
-  const derivedHash = await getDerivedHash(password, salt)
-  return hash === derivedHash
+  console.log('=== SCRYPT VERIFICATION DEBUG START ===');
+  console.log('Password to verify:', password);
+  console.log('Stored hash:', storedHash);
+
+  if (!storedHash || storedHash === '') {
+    console.log('ERROR: storedHash is empty or null');
+    return false;
+  }
+
+  const parts = storedHash.split(':');
+  console.log('Hash parts after split:', parts);
+  console.log('Number of parts:', parts.length);
+
+  if (parts.length !== 2) {
+    console.log('ERROR: Invalid hash format - should have exactly 2 parts separated by ":"');
+    return false;
+  }
+
+  const [salt, hash] = parts;
+  console.log('Salt:', salt);
+  console.log('Hash:', hash);
+
+  if (!salt || !hash) {
+    console.log('ERROR: Salt or hash is empty');
+    return false;
+  }
+
+  console.log('Deriving hash from password and salt...');
+  const derivedHash = await getDerivedHash(password, salt);
+  console.log('Derived hash:', derivedHash);
+
+  const result = hash === derivedHash;
+  console.log('Hash comparison result:', result);
+  console.log('=== SCRYPT VERIFICATION DEBUG END ===');
+
+  return result;
 }
 
 export const getDerivedHash = (

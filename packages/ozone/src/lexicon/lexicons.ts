@@ -5498,10 +5498,55 @@ export const schemaDict = {
               type: 'ref',
               ref: 'lex:com.atproto.repo.strongRef',
             },
+            badges: {
+              type: 'array',
+              description:
+                'Victim classification badges for targeted individuals.',
+              items: {
+                type: 'ref',
+                ref: 'lex:app.bsky.actor.profile#victimBadge',
+              },
+              maxLength: 5,
+            },
             createdAt: {
               type: 'string',
               format: 'datetime',
             },
+          },
+        },
+      },
+      victimBadge: {
+        type: 'object',
+        description: 'A victim classification badge with verification level.',
+        required: ['badgeType'],
+        properties: {
+          badgeType: {
+            type: 'string',
+            knownValues: [
+              'havana',
+              'gangstalked',
+              'targeted',
+              'whistleblower',
+              'retaliation',
+            ],
+            description: 'Type of victimization being claimed.',
+          },
+          verificationLevel: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 3,
+            default: 0,
+            description:
+              'Verification level: 0=unverified, 1=community, 2=document, 3=ai',
+          },
+          evidenceUri: {
+            type: 'string',
+            description: 'URI pointing to encrypted evidence blob.',
+          },
+          verifiedAt: {
+            type: 'string',
+            format: 'datetime',
+            description: 'When the badge was verified.',
           },
         },
       },
@@ -7686,6 +7731,16 @@ export const schemaDict = {
                 type: 'string',
                 maxLength: 640,
                 maxGraphemes: 64,
+              },
+            },
+            sourceIds: {
+              type: 'array',
+              description:
+                'References to global sources database entries that support claims in this post.',
+              maxLength: 10,
+              items: {
+                type: 'string',
+                description: 'UUID of a source entry',
               },
             },
             createdAt: {

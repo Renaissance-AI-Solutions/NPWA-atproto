@@ -14,12 +14,41 @@ export const verifyAccountPassword = async (
   did: string,
   password: string,
 ): Promise<boolean> => {
+  console.log('=== PASSWORD VERIFICATION DEBUG START ===');
+  console.log('Verifying password for DID:', did);
+  console.log('Password to verify:', password);
+
   const found = await db.db
     .selectFrom('account')
     .selectAll()
     .where('did', '=', did)
     .executeTakeFirst()
-  return found ? await scrypt.verify(password, found.passwordScrypt) : false
+
+  if (!found) {
+    console.log('ERROR: No account found in database for DID:', did);
+    return false
+  }
+
+  console.log('Account found in database:', {
+    did: found.did,
+    email: found.email,
+    hasPasswordScrypt: !!found.passwordScrypt,
+    passwordScryptLength: found.passwordScrypt?.length || 0,
+    passwordScryptFull: found.passwordScrypt,
+    passwordScryptIsEmpty: found.passwordScrypt === '' || found.passwordScrypt === null || found.passwordScrypt === undefined
+  });
+
+  if (!found.passwordScrypt || found.passwordScrypt === '') {
+    console.log('ERROR: passwordScrypt is empty or null in database!');
+    return false;
+  }
+
+  console.log('Calling scrypt.verify with password and stored hash...');
+  const result = await scrypt.verify(password, found.passwordScrypt);
+  console.log('Scrypt verification result:', result);
+  console.log('=== PASSWORD VERIFICATION DEBUG END ===');
+
+  return result;
 }
 
 export const verifyAppPassword = async (

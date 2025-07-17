@@ -9,16 +9,18 @@ export default (db: Database): Partial<ServiceImpl<typeof Service>> => ({
     const { actorDid, limit, cursor, feedType } = req
     const { ref } = db.db.dynamic
 
-    // defaults to posts, reposts, and replies
+    // defaults to posts and reposts (journal functionality temporarily disabled)
     let builder = db.db
       .selectFrom('feed_item')
-      .innerJoin('post', 'post.uri', 'feed_item.postUri')
+      .leftJoin('post', (join) =>
+        join.onRef('post.uri', '=', 'feed_item.postUri').on('feed_item.type', '=', 'post')
+      )
       .selectAll('feed_item')
       .where('originatorDid', '=', actorDid)
 
     if (feedType === FeedType.POSTS_WITH_MEDIA) {
       builder = builder
-        // only your own posts
+        // only your own posts (exclude journals and reposts)
         .where('type', '=', 'post')
         // only posts with media
         .whereExists((qb) =>
@@ -29,7 +31,7 @@ export default (db: Database): Partial<ServiceImpl<typeof Service>> => ({
         )
     } else if (feedType === FeedType.POSTS_WITH_VIDEO) {
       builder = builder
-        // only your own posts
+        // only your own posts (exclude journals and reposts)
         .where('type', '=', 'post')
         // only posts with video
         .whereExists((qb) =>
@@ -40,12 +42,13 @@ export default (db: Database): Partial<ServiceImpl<typeof Service>> => ({
         )
     } else if (feedType === FeedType.POSTS_NO_REPLIES) {
       builder = builder.where((qb) =>
-        qb.where('post.replyParent', 'is', null).orWhere('type', '=', 'repost'),
+        qb.where('post.replyParent', 'is', null).orWhere('type', '=', 'repost'), // .orWhere('type', '=', 'journal') temporarily disabled
       )
     } else if (feedType === FeedType.POSTS_AND_AUTHOR_THREADS) {
       builder = builder.where((qb) =>
         qb
           .where('type', '=', 'repost')
+          // .orWhere('type', '=', 'journal') // temporarily disabled
           .orWhere('post.replyParent', 'is', null)
           .orWhere('post.replyRoot', 'like', `at://${actorDid}/%`),
       )
@@ -151,7 +154,7 @@ export default (db: Database): Partial<ServiceImpl<typeof Service>> => ({
 
 // @NOTE does not support additional fields in the protos specific to author feeds
 // and timelines. at the time of writing, hydration/view implementations do not rely on them.
-const feedItemFromRow = (row: { postUri: string; uri: string }) => {
+const feedItemFromRow = (row: { postUri: string; uri: string; type: string }) => {
   return {
     uri: row.postUri,
     repost: row.uri === row.postUri ? undefined : row.uri,

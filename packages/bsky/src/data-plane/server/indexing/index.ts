@@ -34,6 +34,7 @@ import * as StarterPack from './plugins/starter-pack'
 import * as Status from './plugins/status'
 import * as Threadgate from './plugins/thread-gate'
 import * as Verification from './plugins/verification'
+// import * as Journal from './plugins/journal' // Temporarily disabled until migration is applied
 import { RecordProcessor } from './processor'
 
 export class IndexingService {
@@ -55,6 +56,7 @@ export class IndexingService {
     chatDeclaration: ChatDeclaration.PluginType
     verification: Verification.PluginType
     status: Status.PluginType
+    // journal: Journal.PluginType // Temporarily disabled
   }
 
   constructor(
@@ -80,6 +82,7 @@ export class IndexingService {
       chatDeclaration: ChatDeclaration.makePlugin(this.db, this.background),
       verification: Verification.makePlugin(this.db, this.background),
       status: Status.makePlugin(this.db, this.background),
+      // journal: Journal.makePlugin(this.db, this.background), // Temporarily disabled
     }
   }
 
@@ -357,6 +360,11 @@ export class IndexingService {
       .deleteFrom('post_gate')
       .where('creator', '=', did)
       .execute()
+    // journal entries (temporarily disabled)
+    // await this.db.db
+    //   .deleteFrom('journal_entry')
+    //   .where('creator', '=', did)
+    //   .execute()
     // notifications
     await this.db.db
       .deleteFrom('notification')

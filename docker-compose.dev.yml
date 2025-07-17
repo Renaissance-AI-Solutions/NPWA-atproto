@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for AT Protocol development
+  postgres:
+    image: postgres:14.4-alpine
+    container_name: atproto-postgres
+    environment:
+      - POSTGRES_USER=pg
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - atproto_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: 'pg_isready -U pg'
+      interval: 500ms
+      timeout: 10s
+      retries: 20
+
+  # PostgreSQL database for testing (ephemeral)
+  postgres-test:
+    image: postgres:14.4-alpine
+    container_name: atproto-postgres-test
+    environment:
+      - POSTGRES_USER=pg
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
+    ports:
+      - '5433:5432'
+    healthcheck:
+      test: 'pg_isready -U pg'
+      interval: 500ms
+      timeout: 10s
+      retries: 20
+
+  # Redis cache for AT Protocol development
+  redis:
+    image: redis:7.0-alpine
+    container_name: atproto-redis
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - '6379:6379'
+    volumes:
+      - atproto_redis_data:/data
+    healthcheck:
+      test: ['CMD-SHELL', '[ "$$(redis-cli ping)" = "PONG" ]']
+      interval: 500ms
+      timeout: 10s
+      retries: 20
+
+  # Redis cache for testing (ephemeral)
+  redis-test:
+    image: redis:7.0-alpine
+    container_name: atproto-redis-test
+    ports:
+      - '6380:6379'
+    healthcheck:
+      test: ['CMD-SHELL', '[ "$$(redis-cli ping)" = "PONG" ]']
+      interval: 500ms
+      timeout: 10s
+      retries: 20
+
+  # AT Protocol Development Environment
+  atproto-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: atproto-dev-env
+    ports:
+      - '2583:2583'  # PDS
+      - '2584:2584'  # Bsky AppView
+      - '2585:2585'  # Ozone
+      - '2586:2586'  # PLC Directory
+    environment:
+      - NODE_ENV=development
+      - DB_POSTGRES_URL=postgresql://pg:password@postgres:5432/postgres
+      - REDIS_HOST=redis:6379
+      - DB_TEST_POSTGRES_URL=postgresql://pg:password@postgres-test:5432/postgres
+      - REDIS_TEST_HOST=redis-test:6379
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - atproto_dev_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    command: sh -c "pnpm run build && echo 'AT Protocol development environment is ready!' && tail -f /dev/null"
+
+volumes:
+  atproto_postgres_data:
+  atproto_redis_data:
+  atproto_dev_data:
+
+networks:
+  default:
+    name: atproto-dev-network

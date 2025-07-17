@@ -7,7 +7,7 @@ import {
   ValidationError,
   type ValidationResult,
 } from '@atproto/lexicon'
-import { type $Typed, is$typed, maybe$typed } from './util.js'
+// IMPORT REMOVED'
 
 export const schemaDict = {
   AppBskyActorDefs: {

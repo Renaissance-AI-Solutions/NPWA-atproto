@@ -1,0 +1,33 @@
+# AT Protocol Development Environment Dockerfile
+FROM node:18-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    python3 \
+    make \
+    g++ \
+    postgresql-client \
+    redis \
+    bash
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code first
+COPY . .
+
+# Install dependencies
+RUN pnpm install
+
+# Build the project
+RUN pnpm build
+
+# Expose ports for various services
+EXPOSE 2583 2584 2585 2586
+
+# Default command
+CMD ["pnpm", "dev"]

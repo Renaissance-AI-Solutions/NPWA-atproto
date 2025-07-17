@@ -44,9 +44,9 @@ COPY ./packages/internal/xrpc-utils ./packages/internal/xrpc-utils
 COPY ./services/pds ./services/pds
 
 # install all deps
-RUN pnpm install --frozen-lockfile > /dev/null
+RUN pnpm install --frozen-lockfile
 # build all packages with external node_modules
-RUN pnpm build > /dev/null
+RUN pnpm build
 # clean up
 RUN rm -rf node_modules
 # install only prod deps, hoisted to root node_modules dir
@@ -57,7 +57,7 @@ WORKDIR services/pds
 # Uses assets from build stage to reduce build size
 FROM node:20.11-alpine3.18
 
-RUN apk add --update dumb-init
+RUN apk add --update dumb-init postgresql-client
 
 # Avoid zombie processes, handle signal forwarding
 ENTRYPOINT ["dumb-init", "--"]
