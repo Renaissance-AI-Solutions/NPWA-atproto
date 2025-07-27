@@ -352,7 +352,7 @@ const getConstraints = () => {
       },
     }
   } catch (error) {
-    console.warn('Lexicon schemas not fully loaded, using empty constraints:', error.message)
+    console.warn('Lexicon schemas not fully loaded, using empty constraints:', error instanceof Error ? error.message : String(error))
     return {}
   }
 }

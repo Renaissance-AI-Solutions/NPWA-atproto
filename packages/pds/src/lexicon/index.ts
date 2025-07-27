@@ -26,8 +26,8 @@ import * as AppBskyFeedGetFeedGenerators from './types/app/bsky/feed/getFeedGene
 import * as AppBskyFeedGetFeedSkeleton from './types/app/bsky/feed/getFeedSkeleton.js'
 import * as AppBskyFeedGetLikes from './types/app/bsky/feed/getLikes.js'
 import * as AppBskyFeedGetListFeed from './types/app/bsky/feed/getListFeed.js'
-import * as AppBskyFeedGetPosts from './types/app/bsky/feed/getPosts.js'
 import * as AppBskyFeedGetPostThread from './types/app/bsky/feed/getPostThread.js'
+import * as AppBskyFeedGetPosts from './types/app/bsky/feed/getPosts.js'
 import * as AppBskyFeedGetQuotes from './types/app/bsky/feed/getQuotes.js'
 import * as AppBskyFeedGetRepostedBy from './types/app/bsky/feed/getRepostedBy.js'
 import * as AppBskyFeedGetSuggestedFeeds from './types/app/bsky/feed/getSuggestedFeeds.js'
@@ -65,6 +65,9 @@ import * as AppBskyNotificationPutPreferences from './types/app/bsky/notificatio
 import * as AppBskyNotificationPutPreferencesV2 from './types/app/bsky/notification/putPreferencesV2.js'
 import * as AppBskyNotificationRegisterPush from './types/app/bsky/notification/registerPush.js'
 import * as AppBskyNotificationUpdateSeen from './types/app/bsky/notification/updateSeen.js'
+import * as AppBskySourcesCreate from './types/app/bsky/sources/create.js'
+import * as AppBskySourcesList from './types/app/bsky/sources/list.js'
+import * as AppBskySourcesVote from './types/app/bsky/sources/vote.js'
 import * as AppBskyUnspeccedGetConfig from './types/app/bsky/unspecced/getConfig.js'
 import * as AppBskyUnspeccedGetPopularFeedGenerators from './types/app/bsky/unspecced/getPopularFeedGenerators.js'
 import * as AppBskyUnspeccedGetPostThreadOtherV2 from './types/app/bsky/unspecced/getPostThreadOtherV2.js'
@@ -86,9 +89,6 @@ import * as AppBskyUnspeccedSearchStarterPacksSkeleton from './types/app/bsky/un
 import * as AppBskyVideoGetJobStatus from './types/app/bsky/video/getJobStatus.js'
 import * as AppBskyVideoGetUploadLimits from './types/app/bsky/video/getUploadLimits.js'
 import * as AppBskyVideoUploadVideo from './types/app/bsky/video/uploadVideo.js'
-import * as AppNpwaSourcesCreate from './types/app/npwa/sources/create.js'
-import * as AppNpwaSourcesList from './types/app/npwa/sources/list.js'
-import * as AppNpwaSourcesVote from './types/app/npwa/sources/vote.js'
 import * as ChatBskyActorDeleteAccount from './types/chat/bsky/actor/deleteAccount.js'
 import * as ChatBskyActorExportAccountData from './types/chat/bsky/actor/exportAccountData.js'
 import * as ChatBskyConvoAcceptConvo from './types/chat/bsky/convo/acceptConvo.js'
@@ -299,13 +299,11 @@ export class Server {
 export class AppNS {
   _server: Server
   bsky: AppBskyNS
-  npwa: AppNpwaNS
   warlog: AppWarlogNS
 
   constructor(server: Server) {
     this._server = server
     this.bsky = new AppBskyNS(server)
-    this.npwa = new AppNpwaNS(server)
     this.warlog = new AppWarlogNS(server)
   }
 }
@@ -319,6 +317,7 @@ export class AppBskyNS {
   labeler: AppBskyLabelerNS
   notification: AppBskyNotificationNS
   richtext: AppBskyRichtextNS
+  sources: AppBskySourcesNS
   unspecced: AppBskyUnspeccedNS
   video: AppBskyVideoNS
 
@@ -331,6 +330,7 @@ export class AppBskyNS {
     this.labeler = new AppBskyLabelerNS(server)
     this.notification = new AppBskyNotificationNS(server)
     this.richtext = new AppBskyRichtextNS(server)
+    this.sources = new AppBskySourcesNS(server)
     this.unspecced = new AppBskyUnspeccedNS(server)
     this.video = new AppBskyVideoNS(server)
   }
@@ -546,17 +546,6 @@ export class AppBskyFeedNS {
     return this._server.xrpc.method(nsid, cfg)
   }
 
-  getPosts<AV extends AuthVerifier>(
-    cfg: ConfigOf<
-      AV,
-      AppBskyFeedGetPosts.Handler<ExtractAuth<AV>>,
-      AppBskyFeedGetPosts.HandlerReqCtx<ExtractAuth<AV>>
-    >,
-  ) {
-    const nsid = 'app.bsky.feed.getPosts' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-
   getPostThread<AV extends AuthVerifier>(
     cfg: ConfigOf<
       AV,
@@ -565,6 +554,17 @@ export class AppBskyFeedNS {
     >,
   ) {
     const nsid = 'app.bsky.feed.getPostThread' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  getPosts<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskyFeedGetPosts.Handler<ExtractAuth<AV>>,
+      AppBskyFeedGetPosts.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.feed.getPosts' // @ts-ignore
     return this._server.xrpc.method(nsid, cfg)
   }
 
@@ -1010,6 +1010,47 @@ export class AppBskyRichtextNS {
   }
 }
 
+export class AppBskySourcesNS {
+  _server: Server
+
+  constructor(server: Server) {
+    this._server = server
+  }
+
+  create<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskySourcesCreate.Handler<ExtractAuth<AV>>,
+      AppBskySourcesCreate.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.sources.create' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  list<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskySourcesList.Handler<ExtractAuth<AV>>,
+      AppBskySourcesList.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.sources.list' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  vote<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskySourcesVote.Handler<ExtractAuth<AV>>,
+      AppBskySourcesVote.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.sources.vote' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+}
+
 export class AppBskyUnspeccedNS {
   _server: Server
 
@@ -1255,57 +1296,6 @@ export class AppBskyVideoNS {
     >,
   ) {
     const nsid = 'app.bsky.video.uploadVideo' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-}
-
-export class AppNpwaNS {
-  _server: Server
-  sources: AppNpwaSourcesNS
-
-  constructor(server: Server) {
-    this._server = server
-    this.sources = new AppNpwaSourcesNS(server)
-  }
-}
-
-export class AppNpwaSourcesNS {
-  _server: Server
-
-  constructor(server: Server) {
-    this._server = server
-  }
-
-  create<AV extends AuthVerifier>(
-    cfg: ConfigOf<
-      AV,
-      AppNpwaSourcesCreate.Handler<ExtractAuth<AV>>,
-      AppNpwaSourcesCreate.HandlerReqCtx<ExtractAuth<AV>>
-    >,
-  ) {
-    const nsid = 'app.npwa.sources.create' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-
-  list<AV extends AuthVerifier>(
-    cfg: ConfigOf<
-      AV,
-      AppNpwaSourcesList.Handler<ExtractAuth<AV>>,
-      AppNpwaSourcesList.HandlerReqCtx<ExtractAuth<AV>>
-    >,
-  ) {
-    const nsid = 'app.npwa.sources.list' // @ts-ignore
-    return this._server.xrpc.method(nsid, cfg)
-  }
-
-  vote<AV extends AuthVerifier>(
-    cfg: ConfigOf<
-      AV,
-      AppNpwaSourcesVote.Handler<ExtractAuth<AV>>,
-      AppNpwaSourcesVote.HandlerReqCtx<ExtractAuth<AV>>
-    >,
-  ) {
-    const nsid = 'app.npwa.sources.vote' // @ts-ignore
     return this._server.xrpc.method(nsid, cfg)
   }
 }

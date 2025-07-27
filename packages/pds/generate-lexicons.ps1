@@ -1,22 +1,19 @@
-# PowerShell script to generate all lexicon types for PDS
-Write-Host "Generating lexicon types for PDS..."
+# Generate Lexicons for PDS Package
+# This script runs the lexicon code generation for the PDS (Personal Data Server) package
 
-# Get all lexicon JSON files
-$lexiconFiles = Get-ChildItem -Path "../../lexicons" -Recurse -Filter "*.json" | ForEach-Object { 
-    # Convert to relative path from PDS directory
-    $relativePath = $_.FullName -replace [regex]::Escape((Get-Location).Path), "."
-    $relativePath = $relativePath -replace "\\", "/"
-    return "`"$relativePath`""
+Write-Host "Generating lexicons for PDS package..." -ForegroundColor Green
+
+try {
+    # Run the codegen script defined in package.json
+    pnpm run codegen
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ PDS lexicon generation completed successfully!" -ForegroundColor Green
+    } else {
+        Write-Host "❌ PDS lexicon generation failed with exit code: $LASTEXITCODE" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+} catch {
+    Write-Host "❌ Error running PDS lexicon generation: $_" -ForegroundColor Red
+    exit 1
 }
-
-# Join all files into a single command
-$allFiles = $lexiconFiles -join " "
-
-# Run the lexicon generation command
-$command = "pnpm lex gen-server --yes ./src/lexicon $allFiles"
-Write-Host "Running: $command"
-
-# Execute the command
-Invoke-Expression $command
-
-Write-Host "Lexicon generation completed!"

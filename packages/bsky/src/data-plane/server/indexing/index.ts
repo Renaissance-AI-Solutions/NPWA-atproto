@@ -1,6 +1,6 @@
 import { Selectable, sql } from 'kysely'
 import { CID } from 'multiformats/cid'
-import { AtpAgent, ComAtprotoSyncGetLatestCommit } from '@atproto/api'
+import { AtpAgent } from '@atproto/api'
 import { DAY, HOUR } from '@atproto/common'
 import { IdResolver, getPds } from '@atproto/identity'
 import { ValidationError } from '@atproto/lexicon'
@@ -174,9 +174,10 @@ export class IndexingService {
     )
     const { api } = new AtpAgent({ service: pds })
 
-    const { data: car } = await retryXrpc(() =>
+    const response = await retryXrpc(() =>
       api.com.atproto.sync.getRepo({ did }),
     )
+    const car = (response as any).data
     const { root, blocks } = await readCarWithRoot(car)
     const verifiedRepo = await verifyRepo(blocks, root, did, signingKey)
 
@@ -299,7 +300,7 @@ export class IndexingService {
       await retryXrpc(() => api.com.atproto.sync.getLatestCommit({ did }))
       return true
     } catch (err) {
-      if (err instanceof ComAtprotoSyncGetLatestCommit.RepoNotFoundError) {
+      if ((err as any)?.error === 'RepoNotFound') {
         return false
       }
       return null

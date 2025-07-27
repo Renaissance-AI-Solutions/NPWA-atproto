@@ -44,6 +44,7 @@ export function createMiddleware(
     if (!path.startsWith('/') || path === '/') return next()
 
     try {
+      console.log('DEBUG: Image path requested:', path)
       const options = ImageUriBuilder.getOptions(path)
 
       const cacheKey = [options.did, options.cid, options.preset].join('::')

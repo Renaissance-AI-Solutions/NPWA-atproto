@@ -62,6 +62,16 @@ export const schemaDict = {
             type: 'ref',
             ref: 'lex:app.bsky.actor.defs#statusView',
           },
+          badges: {
+            type: 'array',
+            description:
+              'Victim classification badges for targeted individuals.',
+            items: {
+              type: 'ref',
+              ref: 'lex:app.bsky.actor.profile#victimBadge',
+            },
+            maxLength: 5,
+          },
         },
       },
       profileView: {
@@ -120,6 +130,16 @@ export const schemaDict = {
           status: {
             type: 'ref',
             ref: 'lex:app.bsky.actor.defs#statusView',
+          },
+          badges: {
+            type: 'array',
+            description:
+              'Victim classification badges for targeted individuals.',
+            items: {
+              type: 'ref',
+              ref: 'lex:app.bsky.actor.profile#victimBadge',
+            },
+            maxLength: 5,
           },
         },
       },
@@ -200,6 +220,16 @@ export const schemaDict = {
           status: {
             type: 'ref',
             ref: 'lex:app.bsky.actor.defs#statusView',
+          },
+          badges: {
+            type: 'array',
+            description:
+              'Victim classification badges for targeted individuals.',
+            items: {
+              type: 'ref',
+              ref: 'lex:app.bsky.actor.profile#victimBadge',
+            },
+            maxLength: 5,
           },
         },
       },
@@ -2792,48 +2822,6 @@ export const schemaDict = {
       },
     },
   },
-  AppBskyFeedGetPosts: {
-    lexicon: 1,
-    id: 'app.bsky.feed.getPosts',
-    defs: {
-      main: {
-        type: 'query',
-        description:
-          "Gets post views for a specified list of posts (by AT-URI). This is sometimes referred to as 'hydrating' a 'feed skeleton'.",
-        parameters: {
-          type: 'params',
-          required: ['uris'],
-          properties: {
-            uris: {
-              type: 'array',
-              description: 'List of post AT-URIs to return hydrated views for.',
-              items: {
-                type: 'string',
-                format: 'at-uri',
-              },
-              maxLength: 25,
-            },
-          },
-        },
-        output: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['posts'],
-            properties: {
-              posts: {
-                type: 'array',
-                items: {
-                  type: 'ref',
-                  ref: 'lex:app.bsky.feed.defs#postView',
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
   AppBskyFeedGetPostThread: {
     lexicon: 1,
     id: 'app.bsky.feed.getPostThread',
@@ -2895,6 +2883,48 @@ export const schemaDict = {
             name: 'NotFound',
           },
         ],
+      },
+    },
+  },
+  AppBskyFeedGetPosts: {
+    lexicon: 1,
+    id: 'app.bsky.feed.getPosts',
+    defs: {
+      main: {
+        type: 'query',
+        description:
+          "Gets post views for a specified list of posts (by AT-URI). This is sometimes referred to as 'hydrating' a 'feed skeleton'.",
+        parameters: {
+          type: 'params',
+          required: ['uris'],
+          properties: {
+            uris: {
+              type: 'array',
+              description: 'List of post AT-URIs to return hydrated views for.',
+              items: {
+                type: 'string',
+                format: 'at-uri',
+              },
+              maxLength: 25,
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['posts'],
+            properties: {
+              posts: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:app.bsky.feed.defs#postView',
+                },
+              },
+            },
+          },
+        },
       },
     },
   },
@@ -5992,6 +6022,260 @@ export const schemaDict = {
       },
     },
   },
+  AppBskySourcesCreate: {
+    lexicon: 1,
+    id: 'app.bsky.sources.create',
+    defs: {
+      main: {
+        type: 'procedure',
+        description: 'Create a new source.',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+              name: {
+                type: 'string',
+                maxLength: 200,
+                description: 'Source name.',
+              },
+              url: {
+                type: 'string',
+                format: 'uri',
+                description: 'Source URL.',
+              },
+              documentId: {
+                type: 'string',
+                description: 'Reference to document if source is a document.',
+              },
+              badgeType: {
+                type: 'string',
+                knownValues: [
+                  'havana',
+                  'gangstalked',
+                  'targeted',
+                  'whistleblower',
+                  'retaliation',
+                ],
+                description: 'Associated badge type.',
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['source'],
+            properties: {
+              source: {
+                type: 'ref',
+                ref: 'lex:app.bsky.sources.list#source',
+              },
+            },
+          },
+        },
+        errors: [
+          {
+            name: 'InvalidRequest',
+            description: 'Invalid input parameters.',
+          },
+          {
+            name: 'DuplicateSource',
+            description: 'Source already exists.',
+          },
+        ],
+      },
+    },
+  },
+  AppBskySourcesList: {
+    lexicon: 1,
+    id: 'app.bsky.sources.list',
+    defs: {
+      main: {
+        type: 'query',
+        description: 'List sources with filtering and pagination.',
+        parameters: {
+          type: 'params',
+          properties: {
+            limit: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 100,
+              default: 50,
+              description: 'Maximum number of sources to return.',
+            },
+            cursor: {
+              type: 'string',
+              description: 'Pagination cursor.',
+            },
+            badgeType: {
+              type: 'string',
+              knownValues: [
+                'havana',
+                'gangstalked',
+                'targeted',
+                'whistleblower',
+                'retaliation',
+              ],
+              description: 'Filter by badge type.',
+            },
+            rank: {
+              type: 'string',
+              knownValues: [
+                'new',
+                'debated',
+                'debunked',
+                'slightly_vetted',
+                'vetted',
+                'trusted',
+              ],
+              description: 'Filter by source rank.',
+            },
+            search: {
+              type: 'string',
+              maxLength: 200,
+              description: 'Search query for source name or URL.',
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['sources'],
+            properties: {
+              sources: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:app.bsky.sources.list#source',
+                },
+              },
+              cursor: {
+                type: 'string',
+                description: 'Next page cursor.',
+              },
+            },
+          },
+        },
+      },
+      source: {
+        type: 'object',
+        description: 'A source entry.',
+        required: ['id', 'name', 'upvotes', 'downvotes', 'rank', 'createdAt'],
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Source ID.',
+          },
+          name: {
+            type: 'string',
+            description: 'Source name.',
+          },
+          url: {
+            type: 'string',
+            format: 'uri',
+            description: 'Source URL.',
+          },
+          documentId: {
+            type: 'string',
+            description: 'Reference to document if source is a document.',
+          },
+          badgeType: {
+            type: 'string',
+            knownValues: [
+              'havana',
+              'gangstalked',
+              'targeted',
+              'whistleblower',
+              'retaliation',
+            ],
+            description: 'Associated badge type.',
+          },
+          upvotes: {
+            type: 'integer',
+            minimum: 0,
+            description: 'Number of upvotes.',
+          },
+          downvotes: {
+            type: 'integer',
+            minimum: 0,
+            description: 'Number of downvotes.',
+          },
+          rank: {
+            type: 'string',
+            knownValues: [
+              'new',
+              'debated',
+              'debunked',
+              'slightly_vetted',
+              'vetted',
+              'trusted',
+            ],
+            description: 'Source credibility rank.',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'datetime',
+            description: 'When the source was created.',
+          },
+        },
+      },
+    },
+  },
+  AppBskySourcesVote: {
+    lexicon: 1,
+    id: 'app.bsky.sources.vote',
+    defs: {
+      main: {
+        type: 'procedure',
+        description: 'Vote on a source.',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['sourceId', 'vote'],
+            properties: {
+              sourceId: {
+                type: 'string',
+                description: 'ID of the source to vote on.',
+              },
+              vote: {
+                type: 'string',
+                knownValues: ['up', 'down'],
+                description: 'Vote direction.',
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['source'],
+            properties: {
+              source: {
+                type: 'ref',
+                ref: 'lex:app.bsky.sources.list#source',
+              },
+            },
+          },
+        },
+        errors: [
+          {
+            name: 'InvalidRequest',
+            description: 'Invalid input parameters.',
+          },
+          {
+            name: 'SourceNotFound',
+            description: 'Source does not exist.',
+          },
+        ],
+      },
+    },
+  },
   AppBskyUnspeccedDefs: {
     lexicon: 1,
     id: 'app.bsky.unspecced.defs',
@@ -7342,260 +7626,6 @@ export const schemaDict = {
             },
           },
         },
-      },
-    },
-  },
-  AppNpwaSourcesCreate: {
-    lexicon: 1,
-    id: 'app.npwa.sources.create',
-    defs: {
-      main: {
-        type: 'procedure',
-        description: 'Create a new source.',
-        input: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['name'],
-            properties: {
-              name: {
-                type: 'string',
-                maxLength: 200,
-                description: 'Source name.',
-              },
-              url: {
-                type: 'string',
-                format: 'uri',
-                description: 'Source URL.',
-              },
-              documentId: {
-                type: 'string',
-                description: 'Reference to document if source is a document.',
-              },
-              badgeType: {
-                type: 'string',
-                knownValues: [
-                  'havana',
-                  'gangstalked',
-                  'targeted',
-                  'whistleblower',
-                  'retaliation',
-                ],
-                description: 'Associated badge type.',
-              },
-            },
-          },
-        },
-        output: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['source'],
-            properties: {
-              source: {
-                type: 'ref',
-                ref: 'lex:app.npwa.sources.list#source',
-              },
-            },
-          },
-        },
-        errors: [
-          {
-            name: 'InvalidRequest',
-            description: 'Invalid input parameters.',
-          },
-          {
-            name: 'DuplicateSource',
-            description: 'Source already exists.',
-          },
-        ],
-      },
-    },
-  },
-  AppNpwaSourcesList: {
-    lexicon: 1,
-    id: 'app.npwa.sources.list',
-    defs: {
-      main: {
-        type: 'query',
-        description: 'List sources with filtering and pagination.',
-        parameters: {
-          type: 'params',
-          properties: {
-            limit: {
-              type: 'integer',
-              minimum: 1,
-              maximum: 100,
-              default: 50,
-              description: 'Maximum number of sources to return.',
-            },
-            cursor: {
-              type: 'string',
-              description: 'Pagination cursor.',
-            },
-            badgeType: {
-              type: 'string',
-              knownValues: [
-                'havana',
-                'gangstalked',
-                'targeted',
-                'whistleblower',
-                'retaliation',
-              ],
-              description: 'Filter by badge type.',
-            },
-            rank: {
-              type: 'string',
-              knownValues: [
-                'new',
-                'debated',
-                'debunked',
-                'slightly_vetted',
-                'vetted',
-                'trusted',
-              ],
-              description: 'Filter by source rank.',
-            },
-            search: {
-              type: 'string',
-              maxLength: 200,
-              description: 'Search query for source name or URL.',
-            },
-          },
-        },
-        output: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['sources'],
-            properties: {
-              sources: {
-                type: 'array',
-                items: {
-                  type: 'ref',
-                  ref: 'lex:app.npwa.sources.list#source',
-                },
-              },
-              cursor: {
-                type: 'string',
-                description: 'Next page cursor.',
-              },
-            },
-          },
-        },
-      },
-      source: {
-        type: 'object',
-        description: 'A source entry.',
-        required: ['id', 'name', 'upvotes', 'downvotes', 'rank', 'createdAt'],
-        properties: {
-          id: {
-            type: 'string',
-            description: 'Source ID.',
-          },
-          name: {
-            type: 'string',
-            description: 'Source name.',
-          },
-          url: {
-            type: 'string',
-            format: 'uri',
-            description: 'Source URL.',
-          },
-          documentId: {
-            type: 'string',
-            description: 'Reference to document if source is a document.',
-          },
-          badgeType: {
-            type: 'string',
-            knownValues: [
-              'havana',
-              'gangstalked',
-              'targeted',
-              'whistleblower',
-              'retaliation',
-            ],
-            description: 'Associated badge type.',
-          },
-          upvotes: {
-            type: 'integer',
-            minimum: 0,
-            description: 'Number of upvotes.',
-          },
-          downvotes: {
-            type: 'integer',
-            minimum: 0,
-            description: 'Number of downvotes.',
-          },
-          rank: {
-            type: 'string',
-            knownValues: [
-              'new',
-              'debated',
-              'debunked',
-              'slightly_vetted',
-              'vetted',
-              'trusted',
-            ],
-            description: 'Source credibility rank.',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'datetime',
-            description: 'When the source was created.',
-          },
-        },
-      },
-    },
-  },
-  AppNpwaSourcesVote: {
-    lexicon: 1,
-    id: 'app.npwa.sources.vote',
-    defs: {
-      main: {
-        type: 'procedure',
-        description: 'Vote on a source.',
-        input: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['sourceId', 'vote'],
-            properties: {
-              sourceId: {
-                type: 'string',
-                description: 'ID of the source to vote on.',
-              },
-              vote: {
-                type: 'string',
-                knownValues: ['up', 'down'],
-                description: 'Vote direction.',
-              },
-            },
-          },
-        },
-        output: {
-          encoding: 'application/json',
-          schema: {
-            type: 'object',
-            required: ['source'],
-            properties: {
-              source: {
-                type: 'ref',
-                ref: 'lex:app.npwa.sources.list#source',
-              },
-            },
-          },
-        },
-        errors: [
-          {
-            name: 'InvalidRequest',
-            description: 'Invalid input parameters.',
-          },
-          {
-            name: 'SourceNotFound',
-            description: 'Source does not exist.',
-          },
-        ],
       },
     },
   },
@@ -17258,8 +17288,8 @@ export const ids = {
   AppBskyFeedGetFeedSkeleton: 'app.bsky.feed.getFeedSkeleton',
   AppBskyFeedGetLikes: 'app.bsky.feed.getLikes',
   AppBskyFeedGetListFeed: 'app.bsky.feed.getListFeed',
-  AppBskyFeedGetPosts: 'app.bsky.feed.getPosts',
   AppBskyFeedGetPostThread: 'app.bsky.feed.getPostThread',
+  AppBskyFeedGetPosts: 'app.bsky.feed.getPosts',
   AppBskyFeedGetQuotes: 'app.bsky.feed.getQuotes',
   AppBskyFeedGetRepostedBy: 'app.bsky.feed.getRepostedBy',
   AppBskyFeedGetSuggestedFeeds: 'app.bsky.feed.getSuggestedFeeds',
@@ -17319,6 +17349,9 @@ export const ids = {
   AppBskyNotificationRegisterPush: 'app.bsky.notification.registerPush',
   AppBskyNotificationUpdateSeen: 'app.bsky.notification.updateSeen',
   AppBskyRichtextFacet: 'app.bsky.richtext.facet',
+  AppBskySourcesCreate: 'app.bsky.sources.create',
+  AppBskySourcesList: 'app.bsky.sources.list',
+  AppBskySourcesVote: 'app.bsky.sources.vote',
   AppBskyUnspeccedDefs: 'app.bsky.unspecced.defs',
   AppBskyUnspeccedGetConfig: 'app.bsky.unspecced.getConfig',
   AppBskyUnspeccedGetPopularFeedGenerators:
@@ -17352,9 +17385,6 @@ export const ids = {
   AppBskyVideoGetJobStatus: 'app.bsky.video.getJobStatus',
   AppBskyVideoGetUploadLimits: 'app.bsky.video.getUploadLimits',
   AppBskyVideoUploadVideo: 'app.bsky.video.uploadVideo',
-  AppNpwaSourcesCreate: 'app.npwa.sources.create',
-  AppNpwaSourcesList: 'app.npwa.sources.list',
-  AppNpwaSourcesVote: 'app.npwa.sources.vote',
   AppWarlogJournal: 'app.warlog.journal',
   ChatBskyActorDeclaration: 'chat.bsky.actor.declaration',
   ChatBskyActorDefs: 'chat.bsky.actor.defs',

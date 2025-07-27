@@ -10,6 +10,7 @@ import {
   type OmitKey,
 } from '../../../../util'
 import type * as ComAtprotoLabelDefs from '../../../com/atproto/label/defs.js'
+import type * as AppBskyActorProfile from './profile.js'
 import type * as AppBskyGraphDefs from '../graph/defs.js'
 import type * as ComAtprotoRepoStrongRef from '../../../com/atproto/repo/strongRef.js'
 import type * as AppBskyNotificationDefs from '../notification/defs.js'
@@ -33,6 +34,8 @@ export interface ProfileViewBasic {
   createdAt?: string
   verification?: VerificationState
   status?: StatusView
+  /** Victim classification badges for targeted individuals. */
+  badges?: AppBskyActorProfile.VictimBadge[]
 }
 
 const hashProfileViewBasic = 'profileViewBasic'
@@ -59,6 +62,8 @@ export interface ProfileView {
   labels?: ComAtprotoLabelDefs.Label[]
   verification?: VerificationState
   status?: StatusView
+  /** Victim classification badges for targeted individuals. */
+  badges?: AppBskyActorProfile.VictimBadge[]
 }
 
 const hashProfileView = 'profileView'
@@ -91,6 +96,8 @@ export interface ProfileViewDetailed {
   pinnedPost?: ComAtprotoRepoStrongRef.Main
   verification?: VerificationState
   status?: StatusView
+  /** Victim classification badges for targeted individuals. */
+  badges?: AppBskyActorProfile.VictimBadge[]
 }
 
 const hashProfileViewDetailed = 'profileViewDetailed'

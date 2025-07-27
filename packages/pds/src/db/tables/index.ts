@@ -1,4 +1,3 @@
-import * as sources from './sources'
 import * as users from './users'
 import * as badgeClaims from './badge-claims'
 import * as documents from './documents'
@@ -9,8 +8,6 @@ import * as journalEntries from './journal-entries'
 import * as moderation from './moderation'
 
 // Export interfaces and table names
-export type { Sources } from './sources'
-export { sourcesTableName } from './sources'
 export type { Users } from './users'
 export { usersTableName } from './users'
 export type { BadgeClaims } from './badge-claims'
@@ -29,12 +26,11 @@ export type { ModerationAction, ModerationActionSubjectBlob, ModerationReport, M
 export { actionTableName, actionSubjectBlobTableName, reportTableName, reportResolutionTableName } from './moderation'
 
 // Combined database schema
-export type DatabaseSchema = sources.PartialDB &
-  users.PartialDB &
+export type DatabaseSchema = users.PartialDB &
   badgeClaims.PartialDB &
   documents.PartialDB &
   accessLogs.PartialDB &
   aiAnalysis.PartialDB &
   livestreams.PartialDB &
   journalEntries.PartialDB &
-  moderation.PartialDB 
+  moderation.PartialDB

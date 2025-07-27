@@ -360,6 +360,7 @@ export class Views {
       createdAt: actor.createdAt?.toISOString(),
       verification: this.verification(did, state),
       status: this.status(did, state),
+      badges: actor.profile?.badges,
     }
   }
 

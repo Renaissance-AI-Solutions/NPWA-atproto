@@ -4572,6 +4572,16 @@ export const schemaDict = {
             type: 'ref',
             ref: 'lex:app.bsky.actor.defs#statusView',
           },
+          badges: {
+            type: 'array',
+            description:
+              'Victim classification badges for targeted individuals.',
+            items: {
+              type: 'ref',
+              ref: 'lex:app.bsky.actor.profile#victimBadge',
+            },
+            maxLength: 5,
+          },
         },
       },
       profileView: {
@@ -4630,6 +4640,16 @@ export const schemaDict = {
           status: {
             type: 'ref',
             ref: 'lex:app.bsky.actor.defs#statusView',
+          },
+          badges: {
+            type: 'array',
+            description:
+              'Victim classification badges for targeted individuals.',
+            items: {
+              type: 'ref',
+              ref: 'lex:app.bsky.actor.profile#victimBadge',
+            },
+            maxLength: 5,
           },
         },
       },
@@ -4710,6 +4730,16 @@ export const schemaDict = {
           status: {
             type: 'ref',
             ref: 'lex:app.bsky.actor.defs#statusView',
+          },
+          badges: {
+            type: 'array',
+            description:
+              'Victim classification badges for targeted individuals.',
+            items: {
+              type: 'ref',
+              ref: 'lex:app.bsky.actor.profile#victimBadge',
+            },
+            maxLength: 5,
           },
         },
       },
