@@ -10,6 +10,7 @@ import * as inviteCode from './invite-code'
 import * as refreshToken from './refresh-token'
 import * as repoRoot from './repo-root'
 import * as sources from './sources'
+import * as sourceVotes from './source-votes'
 import * as token from './token'
 import * as usedRefreshToken from './used-refresh-token'
 
@@ -26,7 +27,8 @@ export type DatabaseSchema = actor.PartialDB &
   repoRoot.PartialDB &
   inviteCode.PartialDB &
   emailToken.PartialDB &
-  sources.PartialDB
+  sources.PartialDB &
+  sourceVotes.PartialDB
 
 export type { Actor, ActorEntry } from './actor'
 export type { Account, AccountEntry } from './account'
@@ -41,3 +43,4 @@ export type { AppPassword } from './app-password'
 export type { InviteCode, InviteCodeUse } from './invite-code'
 export type { EmailToken, EmailTokenPurpose } from './email-token'
 export type { Sources, SourcesEntry } from './sources'
+export type { SourceVotes, SourceVotesEntry } from './source-votes'
