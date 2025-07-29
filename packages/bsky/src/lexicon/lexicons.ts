@@ -10532,6 +10532,430 @@ export const schemaDict = {
       },
     },
   },
+  AppBskySourcesAddComment: {
+    lexicon: 1,
+    id: 'app.bsky.sources.addComment',
+    defs: {
+      main: {
+        type: 'procedure',
+        description: 'Add a comment to a source.',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['sourceId', 'content'],
+            properties: {
+              sourceId: {
+                type: 'string',
+                description: 'ID of the source to comment on.',
+              },
+              content: {
+                type: 'string',
+                maxLength: 3000,
+                description: 'Comment content.',
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['comment'],
+            properties: {
+              comment: {
+                type: 'ref',
+                ref: 'lex:app.bsky.sources.getComments#comment',
+              },
+            },
+          },
+        },
+        errors: [
+          {
+            name: 'InvalidRequest',
+            description: 'Invalid input parameters.',
+          },
+          {
+            name: 'SourceNotFound',
+            description: 'Source does not exist.',
+          },
+        ],
+      },
+    },
+  },
+  AppBskySourcesCreate: {
+    lexicon: 1,
+    id: 'app.bsky.sources.create',
+    defs: {
+      main: {
+        type: 'procedure',
+        description: 'Create a new source.',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+              name: {
+                type: 'string',
+                maxLength: 200,
+                description: 'Source name.',
+              },
+              url: {
+                type: 'string',
+                format: 'uri',
+                description: 'Source URL.',
+              },
+              documentId: {
+                type: 'string',
+                description: 'Reference to document if source is a document.',
+              },
+              badgeType: {
+                type: 'string',
+                knownValues: [
+                  'havana',
+                  'gangstalked',
+                  'targeted',
+                  'whistleblower',
+                  'retaliation',
+                ],
+                description: 'Associated badge type.',
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['source'],
+            properties: {
+              source: {
+                type: 'ref',
+                ref: 'lex:app.bsky.sources.list#source',
+              },
+            },
+          },
+        },
+        errors: [
+          {
+            name: 'InvalidRequest',
+            description: 'Invalid input parameters.',
+          },
+          {
+            name: 'DuplicateSource',
+            description: 'Source already exists.',
+          },
+        ],
+      },
+    },
+  },
+  AppBskySourcesGet: {
+    lexicon: 1,
+    id: 'app.bsky.sources.get',
+    defs: {
+      main: {
+        type: 'query',
+        description: 'Get a specific source by ID.',
+        parameters: {
+          type: 'params',
+          required: ['sourceId'],
+          properties: {
+            sourceId: {
+              type: 'string',
+              description: 'ID of the source to retrieve.',
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['source'],
+            properties: {
+              source: {
+                type: 'ref',
+                ref: 'lex:app.bsky.sources.list#source',
+              },
+            },
+          },
+        },
+        errors: [
+          {
+            name: 'SourceNotFound',
+            description: 'Source does not exist.',
+          },
+        ],
+      },
+    },
+  },
+  AppBskySourcesGetComments: {
+    lexicon: 1,
+    id: 'app.bsky.sources.getComments',
+    defs: {
+      main: {
+        type: 'query',
+        description: 'Get comments for a specific source.',
+        parameters: {
+          type: 'params',
+          required: ['sourceId'],
+          properties: {
+            sourceId: {
+              type: 'string',
+              description: 'ID of the source to get comments for.',
+            },
+            limit: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 100,
+              default: 50,
+              description: 'Maximum number of comments to return.',
+            },
+            cursor: {
+              type: 'string',
+              description: 'Pagination cursor.',
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['comments'],
+            properties: {
+              comments: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:app.bsky.sources.getComments#comment',
+                },
+              },
+              cursor: {
+                type: 'string',
+                description: 'Next page cursor.',
+              },
+            },
+          },
+        },
+      },
+      comment: {
+        type: 'object',
+        description: 'A source comment.',
+        required: ['id', 'sourceId', 'author', 'content', 'createdAt'],
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Comment ID.',
+          },
+          sourceId: {
+            type: 'string',
+            description: 'Source ID.',
+          },
+          author: {
+            type: 'ref',
+            ref: 'lex:app.bsky.actor.defs#profileViewBasic',
+          },
+          content: {
+            type: 'string',
+            maxLength: 3000,
+            description: 'Comment content.',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'datetime',
+            description: 'When the comment was created.',
+          },
+        },
+      },
+    },
+  },
+  AppBskySourcesList: {
+    lexicon: 1,
+    id: 'app.bsky.sources.list',
+    defs: {
+      main: {
+        type: 'query',
+        description: 'List sources with filtering and pagination.',
+        parameters: {
+          type: 'params',
+          properties: {
+            limit: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 100,
+              default: 50,
+              description: 'Maximum number of sources to return.',
+            },
+            cursor: {
+              type: 'string',
+              description: 'Pagination cursor.',
+            },
+            badgeType: {
+              type: 'string',
+              knownValues: [
+                'havana',
+                'gangstalked',
+                'targeted',
+                'whistleblower',
+                'retaliation',
+              ],
+              description: 'Filter by badge type.',
+            },
+            rank: {
+              type: 'string',
+              knownValues: [
+                'new',
+                'debated',
+                'debunked',
+                'slightly_vetted',
+                'vetted',
+                'trusted',
+              ],
+              description: 'Filter by source rank.',
+            },
+            search: {
+              type: 'string',
+              maxLength: 200,
+              description: 'Search query for source name or URL.',
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['sources'],
+            properties: {
+              sources: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:app.bsky.sources.list#source',
+                },
+              },
+              cursor: {
+                type: 'string',
+                description: 'Next page cursor.',
+              },
+            },
+          },
+        },
+      },
+      source: {
+        type: 'object',
+        description: 'A source entry.',
+        required: ['id', 'name', 'upvotes', 'downvotes', 'rank', 'createdAt'],
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Source ID.',
+          },
+          name: {
+            type: 'string',
+            description: 'Source name.',
+          },
+          url: {
+            type: 'string',
+            format: 'uri',
+            description: 'Source URL.',
+          },
+          documentId: {
+            type: 'string',
+            description: 'Reference to document if source is a document.',
+          },
+          badgeType: {
+            type: 'string',
+            knownValues: [
+              'havana',
+              'gangstalked',
+              'targeted',
+              'whistleblower',
+              'retaliation',
+            ],
+            description: 'Associated badge type.',
+          },
+          upvotes: {
+            type: 'integer',
+            minimum: 0,
+            description: 'Number of upvotes.',
+          },
+          downvotes: {
+            type: 'integer',
+            minimum: 0,
+            description: 'Number of downvotes.',
+          },
+          rank: {
+            type: 'string',
+            knownValues: [
+              'new',
+              'debated',
+              'debunked',
+              'slightly_vetted',
+              'vetted',
+              'trusted',
+            ],
+            description: 'Source credibility rank.',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'datetime',
+            description: 'When the source was created.',
+          },
+        },
+      },
+    },
+  },
+  AppBskySourcesVote: {
+    lexicon: 1,
+    id: 'app.bsky.sources.vote',
+    defs: {
+      main: {
+        type: 'procedure',
+        description: 'Vote on a source.',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['sourceId', 'vote'],
+            properties: {
+              sourceId: {
+                type: 'string',
+                description: 'ID of the source to vote on.',
+              },
+              vote: {
+                type: 'string',
+                knownValues: ['up', 'down'],
+                description: 'Vote direction.',
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['source'],
+            properties: {
+              source: {
+                type: 'ref',
+                ref: 'lex:app.bsky.sources.list#source',
+              },
+            },
+          },
+        },
+        errors: [
+          {
+            name: 'InvalidRequest',
+            description: 'Invalid input parameters.',
+          },
+          {
+            name: 'SourceNotFound',
+            description: 'Source does not exist.',
+          },
+        ],
+      },
+    },
+  },
   AppBskyUnspeccedDefs: {
     lexicon: 1,
     id: 'app.bsky.unspecced.defs',
@@ -13422,6 +13846,12 @@ export const ids = {
   AppBskyNotificationRegisterPush: 'app.bsky.notification.registerPush',
   AppBskyNotificationUpdateSeen: 'app.bsky.notification.updateSeen',
   AppBskyRichtextFacet: 'app.bsky.richtext.facet',
+  AppBskySourcesAddComment: 'app.bsky.sources.addComment',
+  AppBskySourcesCreate: 'app.bsky.sources.create',
+  AppBskySourcesGet: 'app.bsky.sources.get',
+  AppBskySourcesGetComments: 'app.bsky.sources.getComments',
+  AppBskySourcesList: 'app.bsky.sources.list',
+  AppBskySourcesVote: 'app.bsky.sources.vote',
   AppBskyUnspeccedDefs: 'app.bsky.unspecced.defs',
   AppBskyUnspeccedGetConfig: 'app.bsky.unspecced.getConfig',
   AppBskyUnspeccedGetPopularFeedGenerators:

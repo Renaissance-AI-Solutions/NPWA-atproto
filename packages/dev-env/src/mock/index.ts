@@ -6,6 +6,7 @@ import * as seedThreadV2 from '../seed/thread-v2'
 import { postTexts, replyTexts } from './data'
 import blurHashB64 from './img/blur-hash-avatar-b64'
 import labeledImgB64 from './img/labeled-img-b64'
+import { randomUUID } from 'crypto'
 
 // NOTE
 // deterministic date generator
@@ -502,6 +503,9 @@ export async function generateMockSetup(env: TestNetwork) {
 
   await setVerifier(env.bsky.db, alice.accountDid)
 
+  // Seed sources for TISocial
+  await seedSources(env)
+
   const sc = env.getSeedClient()
   await seedThreadV2.simple(sc)
   await seedThreadV2.long(sc)
@@ -546,4 +550,135 @@ const setVerifier = async (db: Database, did: string) => {
     .set({ trustedVerifier: true })
     .where('did', '=', did)
     .execute()
+}
+
+const seedSources = async (env: TestNetwork) => {
+  console.log('🔧 Starting seedSources function...')
+  
+  const db = env.pds.ctx.accountManager.db.db
+  console.log('📊 Database connection obtained')
+  
+  // Check if sources table exists and create if not
+  try {
+    console.log('🔍 Checking if sources table exists...')
+    const result = await db.selectFrom('sources').select('id').limit(1).execute()
+    console.log(`✅ Sources table exists. Found ${result.length} sample rows.`)
+  } catch (error) {
+    // Table doesn't exist, skip seeding
+    console.log('❌ Sources table not found, skipping seeding')
+    console.log('Error details:', error)
+    return
+  }
+  
+  // Check if sources already exist
+  console.log('🔢 Checking existing sources count...')
+  try {
+    const existingCount = await db
+      .selectFrom('sources')
+      .select(db.fn.count('id').as('count'))
+      .executeTakeFirst()
+      
+    console.log('📈 Existing sources count result:', existingCount)
+    
+    if (existingCount && Number(existingCount.count) > 0) {
+      console.log(`⏭️  Sources already exist (${existingCount.count}), skipping seeding`)
+      return
+    }
+  } catch (error) {
+    console.log('❌ Error checking existing sources count:', error)
+    return
+  }
+  
+  console.log('🌱 Seeding sources table...')
+  
+  const sources = [
+    {
+      id: randomUUID(),
+      name: 'Havana Syndrome Research Paper - NIH',
+      url: 'https://www.nih.gov/news-events/news-releases/nih-study-havana-syndrome',
+      documentId: null,
+      badgeType: 'havana' as const,
+      upvotes: 45,
+      downvotes: 3,
+      rank: 'vetted' as const,
+      createdAt: '2024-01-15T10:30:00Z',
+      updatedAt: '2024-01-15T10:30:00Z'
+    },
+    {
+      id: randomUUID(),
+      name: 'FBI FOIA Document - Gangstalking Investigation',
+      url: 'https://vault.fbi.gov/gangstalking',
+      documentId: null,
+      badgeType: 'gangstalked' as const,
+      upvotes: 23,
+      downvotes: 8,
+      rank: 'slightly_vetted' as const,
+      createdAt: '2024-01-14T15:45:00Z',
+      updatedAt: '2024-01-14T15:45:00Z'
+    },
+    {
+      id: randomUUID(),
+      name: 'NSA Whistleblower Report - Mass Surveillance',
+      url: 'https://www.theguardian.com/world/2013/jun/06/nsa-phone-records-verizon-court-order',
+      documentId: null,
+      badgeType: 'whistleblower' as const,
+      upvotes: 156,
+      downvotes: 12,
+      rank: 'trusted' as const,
+      createdAt: '2024-01-13T09:20:00Z',
+      updatedAt: '2024-01-13T09:20:00Z'
+    },
+    {
+      id: randomUUID(),
+      name: 'Congressional Hearing on Directed Energy Weapons',
+      url: 'https://www.congress.gov/hearing/directed-energy-weapons',
+      documentId: null,
+      badgeType: 'targeted' as const,
+      upvotes: 67,
+      downvotes: 5,
+      rank: 'vetted' as const,
+      createdAt: '2024-01-12T14:10:00Z',
+      updatedAt: '2024-01-12T14:10:00Z'
+    },
+    {
+      id: randomUUID(),
+      name: 'Retaliation Against Federal Employees - OIG Report',
+      url: 'https://www.oig.gov/reports/retaliation-federal-employees',
+      documentId: null,
+      badgeType: 'retaliation' as const,
+      upvotes: 34,
+      downvotes: 7,
+      rank: 'slightly_vetted' as const,
+      createdAt: '2024-01-11T11:55:00Z',
+      updatedAt: '2024-01-11T11:55:00Z'
+    },
+    {
+      id: randomUUID(),
+      name: 'Unverified Social Media Post',
+      url: 'https://twitter.com/user/status/123456',
+      documentId: null,
+      badgeType: null,
+      upvotes: 2,
+      downvotes: 15,
+      rank: 'debunked' as const,
+      createdAt: '2024-01-10T16:30:00Z',
+      updatedAt: '2024-01-10T16:30:00Z'
+    }
+  ]
+  
+  // Insert sources
+  console.log(`📥 Inserting ${sources.length} sources...`)
+  try {
+    for (let i = 0; i < sources.length; i++) {
+      const source = sources[i]
+      console.log(`   Inserting source ${i + 1}/${sources.length}: ${source.name}`)
+      await db
+        .insertInto('sources')
+        .values(source)
+        .execute()
+    }
+    console.log(`✅ Successfully seeded ${sources.length} sources into database`)
+  } catch (error) {
+    console.log('❌ Error inserting sources:', error)
+  }
 }

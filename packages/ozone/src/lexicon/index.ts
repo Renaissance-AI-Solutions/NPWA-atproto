@@ -147,6 +147,12 @@ import * as AppBskyNotificationPutPreferences from './types/app/bsky/notificatio
 import * as AppBskyNotificationPutPreferencesV2 from './types/app/bsky/notification/putPreferencesV2.js'
 import * as AppBskyNotificationRegisterPush from './types/app/bsky/notification/registerPush.js'
 import * as AppBskyNotificationUpdateSeen from './types/app/bsky/notification/updateSeen.js'
+import * as AppBskySourcesAddComment from './types/app/bsky/sources/addComment.js'
+import * as AppBskySourcesCreate from './types/app/bsky/sources/create.js'
+import * as AppBskySourcesGet from './types/app/bsky/sources/get.js'
+import * as AppBskySourcesGetComments from './types/app/bsky/sources/getComments.js'
+import * as AppBskySourcesList from './types/app/bsky/sources/list.js'
+import * as AppBskySourcesVote from './types/app/bsky/sources/vote.js'
 import * as AppBskyUnspeccedGetConfig from './types/app/bsky/unspecced/getConfig.js'
 import * as AppBskyUnspeccedGetPopularFeedGenerators from './types/app/bsky/unspecced/getPopularFeedGenerators.js'
 import * as AppBskyUnspeccedGetPostThreadOtherV2 from './types/app/bsky/unspecced/getPostThreadOtherV2.js'
@@ -1326,6 +1332,7 @@ export class AppBskyNS {
   labeler: AppBskyLabelerNS
   notification: AppBskyNotificationNS
   richtext: AppBskyRichtextNS
+  sources: AppBskySourcesNS
   unspecced: AppBskyUnspeccedNS
   video: AppBskyVideoNS
 
@@ -1338,6 +1345,7 @@ export class AppBskyNS {
     this.labeler = new AppBskyLabelerNS(server)
     this.notification = new AppBskyNotificationNS(server)
     this.richtext = new AppBskyRichtextNS(server)
+    this.sources = new AppBskySourcesNS(server)
     this.unspecced = new AppBskyUnspeccedNS(server)
     this.video = new AppBskyVideoNS(server)
   }
@@ -2014,6 +2022,80 @@ export class AppBskyRichtextNS {
 
   constructor(server: Server) {
     this._server = server
+  }
+}
+
+export class AppBskySourcesNS {
+  _server: Server
+
+  constructor(server: Server) {
+    this._server = server
+  }
+
+  addComment<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskySourcesAddComment.Handler<ExtractAuth<AV>>,
+      AppBskySourcesAddComment.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.sources.addComment' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  create<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskySourcesCreate.Handler<ExtractAuth<AV>>,
+      AppBskySourcesCreate.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.sources.create' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  get<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskySourcesGet.Handler<ExtractAuth<AV>>,
+      AppBskySourcesGet.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.sources.get' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  getComments<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskySourcesGetComments.Handler<ExtractAuth<AV>>,
+      AppBskySourcesGetComments.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.sources.getComments' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  list<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskySourcesList.Handler<ExtractAuth<AV>>,
+      AppBskySourcesList.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.sources.list' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  vote<AV extends AuthVerifier>(
+    cfg: ConfigOf<
+      AV,
+      AppBskySourcesVote.Handler<ExtractAuth<AV>>,
+      AppBskySourcesVote.HandlerReqCtx<ExtractAuth<AV>>
+    >,
+  ) {
+    const nsid = 'app.bsky.sources.vote' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
   }
 }
 

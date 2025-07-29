@@ -185,6 +185,12 @@ import * as AppBskyNotificationPutPreferencesV2 from './types/app/bsky/notificat
 import * as AppBskyNotificationRegisterPush from './types/app/bsky/notification/registerPush.js'
 import * as AppBskyNotificationUpdateSeen from './types/app/bsky/notification/updateSeen.js'
 import * as AppBskyRichtextFacet from './types/app/bsky/richtext/facet.js'
+import * as AppBskySourcesAddComment from './types/app/bsky/sources/addComment.js'
+import * as AppBskySourcesCreate from './types/app/bsky/sources/create.js'
+import * as AppBskySourcesGet from './types/app/bsky/sources/get.js'
+import * as AppBskySourcesGetComments from './types/app/bsky/sources/getComments.js'
+import * as AppBskySourcesList from './types/app/bsky/sources/list.js'
+import * as AppBskySourcesVote from './types/app/bsky/sources/vote.js'
 import * as AppBskyUnspeccedDefs from './types/app/bsky/unspecced/defs.js'
 import * as AppBskyUnspeccedGetConfig from './types/app/bsky/unspecced/getConfig.js'
 import * as AppBskyUnspeccedGetPopularFeedGenerators from './types/app/bsky/unspecced/getPopularFeedGenerators.js'
@@ -453,6 +459,12 @@ export * as AppBskyNotificationPutPreferencesV2 from './types/app/bsky/notificat
 export * as AppBskyNotificationRegisterPush from './types/app/bsky/notification/registerPush.js'
 export * as AppBskyNotificationUpdateSeen from './types/app/bsky/notification/updateSeen.js'
 export * as AppBskyRichtextFacet from './types/app/bsky/richtext/facet.js'
+export * as AppBskySourcesAddComment from './types/app/bsky/sources/addComment.js'
+export * as AppBskySourcesCreate from './types/app/bsky/sources/create.js'
+export * as AppBskySourcesGet from './types/app/bsky/sources/get.js'
+export * as AppBskySourcesGetComments from './types/app/bsky/sources/getComments.js'
+export * as AppBskySourcesList from './types/app/bsky/sources/list.js'
+export * as AppBskySourcesVote from './types/app/bsky/sources/vote.js'
 export * as AppBskyUnspeccedDefs from './types/app/bsky/unspecced/defs.js'
 export * as AppBskyUnspeccedGetConfig from './types/app/bsky/unspecced/getConfig.js'
 export * as AppBskyUnspeccedGetPopularFeedGenerators from './types/app/bsky/unspecced/getPopularFeedGenerators.js'
@@ -1753,6 +1765,7 @@ export class AppBskyNS {
   labeler: AppBskyLabelerNS
   notification: AppBskyNotificationNS
   richtext: AppBskyRichtextNS
+  sources: AppBskySourcesNS
   unspecced: AppBskyUnspeccedNS
   video: AppBskyVideoNS
 
@@ -1765,6 +1778,7 @@ export class AppBskyNS {
     this.labeler = new AppBskyLabelerNS(client)
     this.notification = new AppBskyNotificationNS(client)
     this.richtext = new AppBskyRichtextNS(client)
+    this.sources = new AppBskySourcesNS(client)
     this.unspecced = new AppBskyUnspeccedNS(client)
     this.video = new AppBskyVideoNS(client)
   }
@@ -3863,6 +3877,77 @@ export class AppBskyRichtextNS {
 
   constructor(client: XrpcClient) {
     this._client = client
+  }
+}
+
+export class AppBskySourcesNS {
+  _client: XrpcClient
+
+  constructor(client: XrpcClient) {
+    this._client = client
+  }
+
+  addComment(
+    data?: AppBskySourcesAddComment.InputSchema,
+    opts?: AppBskySourcesAddComment.CallOptions,
+  ): Promise<AppBskySourcesAddComment.Response> {
+    return this._client
+      .call('app.bsky.sources.addComment', opts?.qp, data, opts)
+      .catch((e) => {
+        throw AppBskySourcesAddComment.toKnownErr(e)
+      })
+  }
+
+  create(
+    data?: AppBskySourcesCreate.InputSchema,
+    opts?: AppBskySourcesCreate.CallOptions,
+  ): Promise<AppBskySourcesCreate.Response> {
+    return this._client
+      .call('app.bsky.sources.create', opts?.qp, data, opts)
+      .catch((e) => {
+        throw AppBskySourcesCreate.toKnownErr(e)
+      })
+  }
+
+  get(
+    params?: AppBskySourcesGet.QueryParams,
+    opts?: AppBskySourcesGet.CallOptions,
+  ): Promise<AppBskySourcesGet.Response> {
+    return this._client
+      .call('app.bsky.sources.get', params, undefined, opts)
+      .catch((e) => {
+        throw AppBskySourcesGet.toKnownErr(e)
+      })
+  }
+
+  getComments(
+    params?: AppBskySourcesGetComments.QueryParams,
+    opts?: AppBskySourcesGetComments.CallOptions,
+  ): Promise<AppBskySourcesGetComments.Response> {
+    return this._client.call(
+      'app.bsky.sources.getComments',
+      params,
+      undefined,
+      opts,
+    )
+  }
+
+  list(
+    params?: AppBskySourcesList.QueryParams,
+    opts?: AppBskySourcesList.CallOptions,
+  ): Promise<AppBskySourcesList.Response> {
+    return this._client.call('app.bsky.sources.list', params, undefined, opts)
+  }
+
+  vote(
+    data?: AppBskySourcesVote.InputSchema,
+    opts?: AppBskySourcesVote.CallOptions,
+  ): Promise<AppBskySourcesVote.Response> {
+    return this._client
+      .call('app.bsky.sources.vote', opts?.qp, data, opts)
+      .catch((e) => {
+        throw AppBskySourcesVote.toKnownErr(e)
+      })
   }
 }
 

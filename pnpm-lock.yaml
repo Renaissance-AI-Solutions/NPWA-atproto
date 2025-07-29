@@ -81,17 +81,17 @@ importers:
   packages/api:
     dependencies:
       '@atproto/common-web':
-        specifier: workspace:^
+        specifier: ^0.4.2
         version: link:../common-web
       '@atproto/lexicon':
-        specifier: workspace:^
-        version: link:../lexicon
+        specifier: ^0.4.11
+        version: 0.4.12
       '@atproto/syntax':
-        specifier: workspace:^
+        specifier: ^0.4.0
         version: link:../syntax
       '@atproto/xrpc':
-        specifier: workspace:^
-        version: link:../xrpc
+        specifier: ^0.7.0
+        version: 0.7.1
       await-lock:
         specifier: ^2.2.2
         version: 2.2.2
@@ -106,7 +106,7 @@ importers:
         version: 3.24.2
     devDependencies:
       '@atproto/lex-cli':
-        specifier: workspace:^
+        specifier: ^0.8.3
         version: link:../lex-cli
       jest:
         specifier: ^28.1.2
@@ -1831,6 +1831,15 @@ packages:
       '@jridgewell/trace-mapping': 0.3.25
     dev: true
 
+  /@atproto/common-web@0.4.2:
+    resolution: {integrity: sha512-vrXwGNoFGogodjQvJDxAeP3QbGtawgZute2ed1XdRO0wMixLk3qewtikZm06H259QDJVu6voKC5mubml+WgQUw==}
+    dependencies:
+      graphemer: 1.4.0
+      multiformats: 9.9.0
+      uint8arrays: 3.0.0
+      zod: 3.24.2
+    dev: false
+
   /@atproto/common@0.1.0:
     resolution: {integrity: sha512-OB5tWE2R19jwiMIs2IjQieH5KTUuMb98XGCn9h3xuu6NanwjlmbCYMv08fMYwIp3UQ6jcq//84cDT3Bu6fJD+A==}
     dependencies:
@@ -1855,6 +1864,16 @@ packages:
       multiformats: 9.9.0
       one-webcrypto: 1.0.3
       uint8arrays: 3.0.0
+
+  /@atproto/lexicon@0.4.12:
+    resolution: {integrity: sha512-fcEvEQ1GpQYF5igZ4IZjPWEoWVpsEF22L9RexxLS3ptfySXLflEyH384e7HITzO/73McDeaJx3lqHIuqn9ulnw==}
+    dependencies:
+      '@atproto/common-web': 0.4.2
+      '@atproto/syntax': 0.4.0
+      iso-datestring-validator: 2.2.2
+      multiformats: 9.9.0
+      zod: 3.24.2
+    dev: false
 
   /@atproto/pds@0.3.0-entryway.3:
     resolution: {integrity: sha512-hc/KcBgFjSfrnNgrc9vx/QaCov79cXbRRQEWrAt/rdMLhcFEGCydN7ukddjOiLkLdhDqywSHrLOEbqg+MReQXw==}
@@ -1907,6 +1926,17 @@ packages:
       - pg-native
       - supports-color
     dev: true
+
+  /@atproto/syntax@0.4.0:
+    resolution: {integrity: sha512-b9y5ceHS8YKOfP3mdKmwAx5yVj9294UN7FG2XzP6V5aKUdFazEYRnR9m5n5ZQFKa3GNvz7de9guZCJ/sUTcOAA==}
+    dev: false
+
+  /@atproto/xrpc@0.7.1:
+    resolution: {integrity: sha512-ANHEzlskYlMEdH18m+Itp3a8d0pEJao2qoDybDoMupTnoeNkya4VKIaOgAi6ERQnqatBBZyn9asW+7rJmSt/8g==}
+    dependencies:
+      '@atproto/lexicon': 0.4.12
+      zod: 3.24.2
+    dev: false
 
   /@aws-crypto/crc32@2.0.0:
     resolution: {integrity: sha512-TvE1r2CUueyXOuHdEigYjIZVesInd9KN+K/TFFNfkkxRThiNxO6i4ZqqAVMoEjAamZZ1AA8WXJkjCz7YShHPQA==}
