@@ -7,6 +7,8 @@ export interface SourceVotes {
   voteType: 'up' | 'down'
   createdAt: string
   updatedAt: string
+  is_active: Generated<boolean>
+  deactivated_at: string | null
 }
 
 export type SourceVotesEntry = Selectable<SourceVotes>

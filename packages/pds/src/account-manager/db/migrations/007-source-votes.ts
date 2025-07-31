@@ -10,7 +10,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('voteType', 'varchar', (col) => col.notNull()) // 'up' or 'down'
     .addColumn('createdAt', 'varchar', (col) => col.notNull())
     .addColumn('updatedAt', 'varchar', (col) => col.notNull())
-    .addColumn('is_active', 'boolean', (col) => col.defaultTo(true).notNull()) // Soft delete flag
+    .addColumn('is_active', 'integer') // Soft delete flag: 1 for active, NULL for deactivated (allows unique constraint)
     .addColumn('deactivated_at', 'varchar') // Timestamp when vote was deactivated
     .execute()
 
