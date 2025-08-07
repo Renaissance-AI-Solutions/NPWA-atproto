@@ -289,6 +289,7 @@ export class Server {
   app: AppNS
   chat: ChatNS
   tools: ToolsNS
+  xyz: XyzNS
 
   constructor(options?: XrpcOptions) {
     this.xrpc = createXrpcServer(schemas, options)
@@ -296,6 +297,7 @@ export class Server {
     this.app = new AppNS(this)
     this.chat = new ChatNS(this)
     this.tools = new ToolsNS(this)
+    this.xyz = new XyzNS(this)
   }
 }
 
@@ -3139,6 +3141,34 @@ export class ToolsOzoneVerificationNS {
   ) {
     const nsid = 'tools.ozone.verification.revokeVerifications' // @ts-ignore
     return this._server.xrpc.method(nsid, cfg)
+  }
+}
+
+export class XyzNS {
+  _server: Server
+  tisocial: XyzTisocialNS
+
+  constructor(server: Server) {
+    this._server = server
+    this.tisocial = new XyzTisocialNS(server)
+  }
+}
+
+export class XyzTisocialNS {
+  _server: Server
+  journal: XyzTisocialJournalNS
+
+  constructor(server: Server) {
+    this._server = server
+    this.journal = new XyzTisocialJournalNS(server)
+  }
+}
+
+export class XyzTisocialJournalNS {
+  _server: Server
+
+  constructor(server: Server) {
+    this._server = server
   }
 }
 

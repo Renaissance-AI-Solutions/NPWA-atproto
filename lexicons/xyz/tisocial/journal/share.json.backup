@@ -1,0 +1,294 @@
+{
+  "lexicon": 1,
+  "id": "xyz.tisocial.journal.share",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A controlled share of a journal entry within the community.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["subject", "shareType", "createdAt"],
+        "properties": {
+          "subject": {
+            "type": "ref",
+            "ref": "#shareSubject",
+            "description": "The journal entry being shared."
+          },
+          "shareType": {
+            "type": "string",
+            "knownValues": ["amplify", "similar_experience", "resource_relevant", "witness_support"],
+            "description": "Why this entry is being shared."
+          },
+          "shareNote": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Optional note explaining why this is being shared."
+          },
+          "shareScope": {
+            "type": "ref",
+            "ref": "#shareScope",
+            "description": "Who can see this shared entry."
+          },
+          "preserveAnonymity": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to hide original author identity when sharing."
+          },
+          "facets": {
+            "type": "array",
+            "description": "Rich text annotations in share note.",
+            "items": {
+              "type": "ref",
+              "ref": "app.bsky.richtext.facet"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "When the share was created."
+          }
+        }
+      }
+    },
+    "createShare": {
+      "type": "procedure",
+      "description": "Share a journal entry with the community.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["subject", "shareType"],
+          "properties": {
+            "subject": {
+              "type": "ref",
+              "ref": "#shareSubject",
+              "description": "Journal entry to share."
+            },
+            "shareType": {
+              "type": "string",
+              "knownValues": ["amplify", "similar_experience", "resource_relevant", "witness_support"],
+              "description": "Reason for sharing."
+            },
+            "shareNote": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Optional explanation note."
+            },
+            "shareScope": {
+              "type": "ref",
+              "ref": "#shareScope",
+              "description": "Sharing visibility scope."
+            },
+            "preserveAnonymity": {
+              "type": "boolean",
+              "default": false,
+              "description": "Hide original author identity."
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["uri", "cid"],
+          "properties": {
+            "uri": {
+              "type": "string",
+              "format": "at-uri",
+              "description": "URI of the created share."
+            },
+            "cid": {
+              "type": "string",
+              "format": "cid",
+              "description": "Content identifier of the share."
+            }
+          }
+        }
+      },
+      "errors": [
+        {
+          "name": "SubjectNotFound",
+          "description": "Journal entry not found or not accessible."
+        },
+        {
+          "name": "SharingNotAllowed",
+          "description": "Sharing is not allowed for this journal entry."
+        },
+        {
+          "name": "InsufficientPermissions",
+          "description": "User lacks permissions to share this entry."
+        },
+        {
+          "name": "InvalidShareScope",
+          "description": "Invalid sharing scope configuration."
+        }
+      ]
+    },
+    "getShares": {
+      "type": "query",
+      "description": "Get shares of a journal entry.",
+      "parameters": {
+        "type": "params",
+        "required": ["uri"],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "URI of the journal entry."
+          },
+          "shareType": {
+            "type": "string",
+            "knownValues": ["amplify", "similar_experience", "resource_relevant", "witness_support"],
+            "description": "Filter by share type."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 30,
+            "description": "Maximum shares to return."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor."
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["shares"],
+          "properties": {
+            "shares": {
+              "type": "array",
+              "items": {
+                "type": "ref",
+                "ref": "#shareView"
+              }
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Pagination cursor."
+            }
+          }
+        }
+      }
+    },
+    "deleteShare": {
+      "type": "procedure",
+      "description": "Delete a share (author only).",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["uri"],
+          "properties": {
+            "uri": {
+              "type": "string",
+              "format": "at-uri",
+              "description": "URI of the share to delete."
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["success"],
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "description": "Whether deletion was successful."
+            }
+          }
+        }
+      }
+    },
+    "shareSubject": {
+      "type": "object",
+      "description": "Journal entry being shared.",
+      "required": ["uri"],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "URI of the journal entry."
+        },
+        "cid": {
+          "type": "string",
+          "format": "cid",
+          "description": "CID of the journal entry."
+        }
+      }
+    },
+    "shareScope": {
+      "type": "object",
+      "description": "Visibility scope for shared entries.",
+      "required": ["level"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "knownValues": ["followers", "badge_community", "public"],
+          "description": "Who can see this shared entry."
+        },
+        "allowedBadges": {
+          "type": "array",
+          "description": "Specific badge types when level is badge_community.",
+          "items": {
+            "type": "string",
+            "knownValues": ["havana", "gangstalked", "targeted", "whistleblower", "retaliation"]
+          },
+          "maxLength": 5
+        },
+        "excludeDids": {
+          "type": "array",
+          "description": "DIDs to exclude from seeing this share.",
+          "items": {
+            "type": "string"
+          },
+          "maxLength": 100
+        }
+      }
+    },
+    "shareView": {
+      "type": "object",
+      "description": "Share with author and metadata for display.",
+      "required": ["uri", "cid", "author", "record", "indexedAt"],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "URI of the share."
+        },
+        "cid": {
+          "type": "string",
+          "format": "cid",
+          "description": "Content identifier."
+        },
+        "author": {
+          "type": "ref",
+          "ref": "app.bsky.actor.defs#profileViewBasic",
+          "description": "Share author profile."
+        },
+        "record": {
+          "type": "unknown",
+          "description": "Share record data."
+        },
+        "indexedAt": {
+          "type": "string",
+          "format": "datetime",
+          "description": "When share was indexed."
+        },
+        "originalEntry": {
+          "type": "ref",
+          "ref": "xyz.tisocial.journal.feed#journalFeedEntry",
+          "description": "The original journal entry being shared."
+        }
+      }
+    }
+  }
+}

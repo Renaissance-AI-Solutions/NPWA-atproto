@@ -17240,6 +17240,579 @@ export const schemaDict = {
       },
     },
   },
+  XyzTisocialJournalComment: {
+    lexicon: 1,
+    id: 'xyz.tisocial.journal.comment',
+    defs: {
+      main: {
+        type: 'record',
+        description:
+          'A comment on a journal entry, providing community support and discussion.',
+        key: 'tid',
+        record: {
+          type: 'object',
+          required: ['text', 'subject', 'createdAt'],
+          properties: {
+            text: {
+              type: 'string',
+              description: 'The comment content.',
+              maxGraphemes: 1000,
+              maxLength: 10000,
+            },
+            subject: {
+              type: 'ref',
+              ref: 'lex:xyz.tisocial.journal.comment#commentSubject',
+              description: 'What this comment is responding to.',
+            },
+            reply: {
+              type: 'ref',
+              ref: 'lex:xyz.tisocial.journal.comment#commentReply',
+              description: 'If this is a reply to another comment.',
+            },
+            supportType: {
+              type: 'string',
+              knownValues: [
+                'emotional',
+                'informational',
+                'practical',
+                'solidarity',
+              ],
+              description: 'Type of support being offered.',
+            },
+            isVerified: {
+              type: 'boolean',
+              default: false,
+              description:
+                'Whether this comment has been verified by moderators.',
+            },
+            reactions: {
+              type: 'array',
+              description: 'Community reactions to this comment.',
+              items: {
+                type: 'string',
+                knownValues: [
+                  'helpful',
+                  'supportive',
+                  'accurate',
+                  'concerning',
+                ],
+              },
+              maxLength: 20,
+            },
+            mentions: {
+              type: 'array',
+              description: 'Mentioned users in the comment.',
+              items: {
+                type: 'ref',
+                ref: 'lex:com.atproto.repo.strongRef',
+              },
+              maxLength: 10,
+            },
+            visibility: {
+              type: 'union',
+              refs: [
+                'lex:xyz.tisocial.journal.comment#publicVisibility',
+                'lex:xyz.tisocial.journal.comment#communityVisibility',
+                'lex:xyz.tisocial.journal.comment#privateVisibility',
+              ],
+            },
+            createdAt: {
+              type: 'string',
+              format: 'datetime',
+              description: 'When the comment was created.',
+            },
+          },
+        },
+      },
+      commentSubject: {
+        type: 'object',
+        description: 'Reference to what is being commented on.',
+        required: ['uri'],
+        properties: {
+          uri: {
+            type: 'string',
+            description: 'AT-URI of the journal entry being commented on.',
+          },
+          cid: {
+            type: 'string',
+            description: 'CID of the journal entry at time of comment.',
+          },
+        },
+      },
+      commentReply: {
+        type: 'object',
+        description: 'Reference to parent comment if this is a reply.',
+        required: ['root', 'parent'],
+        properties: {
+          root: {
+            type: 'ref',
+            ref: 'lex:com.atproto.repo.strongRef',
+            description: 'Root comment in the thread.',
+          },
+          parent: {
+            type: 'ref',
+            ref: 'lex:com.atproto.repo.strongRef',
+            description: 'Direct parent comment.',
+          },
+        },
+      },
+      publicVisibility: {
+        type: 'object',
+        description: 'Comment visible to all users.',
+        required: ['$type'],
+        properties: {
+          $type: {
+            type: 'string',
+            const: 'xyz.tisocial.journal.comment#publicVisibility',
+          },
+          allowReplies: {
+            type: 'boolean',
+            default: true,
+            description: 'Whether others can reply to this comment.',
+          },
+        },
+      },
+      communityVisibility: {
+        type: 'object',
+        description: 'Comment visible to badge community only.',
+        required: ['$type'],
+        properties: {
+          $type: {
+            type: 'string',
+            const: 'xyz.tisocial.journal.comment#communityVisibility',
+          },
+          badgeRequired: {
+            type: 'string',
+            knownValues: [
+              'havana',
+              'gangstalked',
+              'targeted',
+              'whistleblower',
+              'retaliation',
+            ],
+            description: 'Which badge is required to see this comment.',
+          },
+        },
+      },
+      privateVisibility: {
+        type: 'object',
+        description: 'Comment visible to entry author only.',
+        required: ['$type'],
+        properties: {
+          $type: {
+            type: 'string',
+            const: 'xyz.tisocial.journal.comment#privateVisibility',
+          },
+        },
+      },
+    },
+  },
+  XyzTisocialJournalEntry: {
+    lexicon: 1,
+    id: 'xyz.tisocial.journal.entry',
+    defs: {
+      main: {
+        type: 'record',
+        description:
+          'Secure journal entry for documenting incidents, symptoms, and experiences with comprehensive privacy controls and HIPAA compliance.',
+        key: 'tid',
+        record: {
+          type: 'object',
+          required: [
+            'content',
+            'entryType',
+            'createdAt',
+            'privacyLevel',
+            'securityClassification',
+          ],
+          properties: {
+            content: {
+              type: 'ref',
+              ref: 'lex:xyz.tisocial.journal.entry#secureContent',
+              description:
+                'Main journal entry content with encryption support.',
+            },
+            entryType: {
+              type: 'string',
+              knownValues: ['real_time', 'backdated'],
+              description:
+                'Classification of when the entry was made relative to the incident.',
+            },
+            incidentTimestamp: {
+              type: 'string',
+              format: 'datetime',
+              description:
+                'When the actual incident occurred (may differ from createdAt for backdated entries).',
+            },
+            privacyLevel: {
+              type: 'string',
+              knownValues: [
+                'private',
+                'contacts',
+                'badge_community',
+                'public',
+                'anonymous',
+                'medical',
+              ],
+              description:
+                'Privacy level determining access controls for this entry.',
+            },
+            securityClassification: {
+              type: 'string',
+              knownValues: [
+                'unclassified',
+                'sensitive',
+                'phi',
+                'legal_evidence',
+                'whistleblower',
+              ],
+              description:
+                'Security classification affecting encryption and access requirements.',
+            },
+            accessControlList: {
+              type: 'array',
+              description:
+                'DIDs with explicit access permission regardless of privacy level.',
+              items: {
+                type: 'string',
+                description: 'AT Protocol DID with explicit access',
+              },
+              maxLength: 50,
+            },
+            location: {
+              type: 'ref',
+              ref: 'lex:xyz.tisocial.journal.entry#secureLocation',
+              description: 'Geographic location with optional encryption.',
+            },
+            symptoms: {
+              type: 'ref',
+              ref: 'lex:xyz.tisocial.journal.entry#secureSymptoms',
+              description:
+                'Structured symptom data with required encryption for PHI compliance.',
+            },
+            evidenceUris: {
+              type: 'array',
+              description:
+                'URIs pointing to encrypted evidence blobs (photos, audio, documents).',
+              items: {
+                type: 'string',
+              },
+              maxLength: 10,
+            },
+            sourceIds: {
+              type: 'array',
+              description:
+                'References to global sources database entries that support claims in this entry.',
+              maxLength: 10,
+              items: {
+                type: 'string',
+                description: 'UUID of a source entry',
+              },
+            },
+            tags: {
+              type: 'array',
+              description: 'User-defined tags for categorization.',
+              items: {
+                type: 'string',
+                maxLength: 50,
+              },
+              maxLength: 10,
+            },
+            allowComments: {
+              type: 'boolean',
+              default: false,
+              description: 'Whether to allow community comments on this entry.',
+            },
+            allowSharing: {
+              type: 'boolean',
+              default: false,
+              description:
+                'Whether to allow community members to share this entry.',
+            },
+            triggerWarnings: {
+              type: 'array',
+              description: 'Content warnings for sensitive material.',
+              items: {
+                type: 'string',
+                knownValues: [
+                  'violence',
+                  'medical_detail',
+                  'psychological_trauma',
+                  'surveillance_detail',
+                  'technology_detail',
+                  'graphic_description',
+                ],
+              },
+              maxLength: 5,
+            },
+            auditMetadata: {
+              type: 'ref',
+              ref: 'lex:xyz.tisocial.journal.entry#auditMetadata',
+              description: 'Audit trail and access tracking metadata.',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'datetime',
+              description: 'When the journal entry was created.',
+            },
+          },
+        },
+      },
+      secureContent: {
+        type: 'object',
+        description: 'Journal content with encryption support.',
+        required: ['text', 'isEncrypted', 'encryptionLevel'],
+        properties: {
+          text: {
+            type: 'string',
+            description:
+              'The main content text (encrypted if isEncrypted is true).',
+            maxGraphemes: 3000,
+            maxLength: 30000,
+          },
+          isEncrypted: {
+            type: 'boolean',
+            description: 'Whether the content text is encrypted.',
+          },
+          encryptionLevel: {
+            type: 'string',
+            knownValues: ['none', 'standard', 'enhanced', 'quantum_resistant'],
+            description: 'Level of encryption applied to the content.',
+          },
+          encryptionMetadata: {
+            type: 'ref',
+            ref: 'lex:xyz.tisocial.journal.entry#encryptionMetadata',
+            description:
+              'Metadata required for decryption (only present if encrypted).',
+          },
+        },
+      },
+      secureLocation: {
+        type: 'object',
+        description: 'Geographic location data with optional encryption.',
+        required: ['encrypted', 'data'],
+        properties: {
+          encrypted: {
+            type: 'boolean',
+            description: 'Whether location coordinates are encrypted.',
+          },
+          data: {
+            type: 'string',
+            description:
+              'Location data (JSON string, encrypted if encrypted=true).',
+          },
+          accuracy: {
+            type: 'integer',
+            description: 'Location accuracy in meters (unencrypted).',
+          },
+          address: {
+            type: 'string',
+            maxLength: 200,
+            description: 'Human-readable address (may remain unencrypted).',
+          },
+        },
+      },
+      secureSymptoms: {
+        type: 'object',
+        description:
+          'Symptom data with mandatory encryption for PHI compliance.',
+        required: ['encrypted', 'data', 'count'],
+        properties: {
+          encrypted: {
+            type: 'boolean',
+            description:
+              'Whether symptom data is encrypted (must be true for PHI).',
+          },
+          data: {
+            type: 'string',
+            description: 'Encrypted symptom data as JSON string.',
+          },
+          count: {
+            type: 'integer',
+            minimum: 0,
+            description: 'Number of symptoms (unencrypted for statistics).',
+          },
+        },
+      },
+      encryptionMetadata: {
+        type: 'object',
+        description: 'Encryption metadata for secure content.',
+        required: ['algorithm', 'keyId', 'iv', 'salt'],
+        properties: {
+          algorithm: {
+            type: 'string',
+            description: 'Encryption algorithm used (e.g., AES-256-CBC).',
+          },
+          keyId: {
+            type: 'string',
+            description: 'Identifier for the encryption key used.',
+          },
+          iv: {
+            type: 'string',
+            description: 'Initialization vector for encryption.',
+          },
+          salt: {
+            type: 'string',
+            description: 'Salt used for key derivation.',
+          },
+          signature: {
+            type: 'string',
+            description: 'Digital signature for tamper detection.',
+          },
+        },
+      },
+      auditMetadata: {
+        type: 'object',
+        description: 'Audit trail and access tracking metadata.',
+        properties: {
+          lastAccessed: {
+            type: 'string',
+            format: 'datetime',
+            description: 'Timestamp of last access to this entry.',
+          },
+          accessCount: {
+            type: 'integer',
+            minimum: 0,
+            default: 0,
+            description: 'Number of times this entry has been accessed.',
+          },
+          securityFlags: {
+            type: 'array',
+            description: 'Security alerts or flags for this entry.',
+            items: {
+              type: 'string',
+            },
+            maxLength: 10,
+          },
+          lastModified: {
+            type: 'string',
+            format: 'datetime',
+            description: 'Timestamp of last modification to this entry.',
+          },
+          version: {
+            type: 'integer',
+            minimum: 1,
+            default: 1,
+            description: 'Version number for tracking changes.',
+          },
+        },
+      },
+    },
+  },
+  XyzTisocialJournalShare: {
+    lexicon: 1,
+    id: 'xyz.tisocial.journal.share',
+    defs: {
+      main: {
+        type: 'record',
+        description:
+          'A controlled share of a journal entry within the community.',
+        key: 'tid',
+        record: {
+          type: 'object',
+          required: ['subject', 'shareType', 'createdAt'],
+          properties: {
+            subject: {
+              type: 'ref',
+              ref: 'lex:xyz.tisocial.journal.share#shareSubject',
+              description: 'The journal entry being shared.',
+            },
+            shareType: {
+              type: 'string',
+              knownValues: [
+                'amplify',
+                'similar_experience',
+                'resource_relevant',
+                'witness_support',
+              ],
+              description: 'Why this entry is being shared.',
+            },
+            shareNote: {
+              type: 'string',
+              maxLength: 500,
+              description: 'Optional note explaining why this is being shared.',
+            },
+            shareScope: {
+              type: 'ref',
+              ref: 'lex:xyz.tisocial.journal.share#shareScope',
+              description: 'Who can see this shared entry.',
+            },
+            preserveAnonymity: {
+              type: 'boolean',
+              default: false,
+              description:
+                'Whether to hide original author identity when sharing.',
+            },
+            facets: {
+              type: 'array',
+              description: 'Rich text annotations in share note.',
+              items: {
+                type: 'ref',
+                ref: 'lex:app.bsky.richtext.facet',
+              },
+            },
+            createdAt: {
+              type: 'string',
+              format: 'datetime',
+              description: 'When the share was created.',
+            },
+          },
+        },
+      },
+      shareSubject: {
+        type: 'object',
+        description: 'Journal entry being shared.',
+        required: ['uri'],
+        properties: {
+          uri: {
+            type: 'string',
+            format: 'at-uri',
+            description: 'URI of the journal entry.',
+          },
+          cid: {
+            type: 'string',
+            format: 'cid',
+            description: 'CID of the journal entry.',
+          },
+        },
+      },
+      shareScope: {
+        type: 'object',
+        description: 'Visibility scope for shared entries.',
+        required: ['level'],
+        properties: {
+          level: {
+            type: 'string',
+            knownValues: ['followers', 'badge_community', 'public'],
+            description: 'Who can see this shared entry.',
+          },
+          allowedBadges: {
+            type: 'array',
+            description: 'Specific badge types when level is badge_community.',
+            items: {
+              type: 'string',
+              knownValues: [
+                'havana',
+                'gangstalked',
+                'targeted',
+                'whistleblower',
+                'retaliation',
+              ],
+            },
+            maxLength: 5,
+          },
+          excludeDids: {
+            type: 'array',
+            description: 'DIDs to exclude from seeing this share.',
+            items: {
+              type: 'string',
+            },
+            maxLength: 100,
+          },
+        },
+      },
+    },
+  },
 } as const satisfies Record<string, LexiconDoc>
 export const schemas = Object.values(schemaDict) satisfies LexiconDoc[]
 export const lexicons: Lexicons = new Lexicons(schemas)
@@ -17580,4 +18153,7 @@ export const ids = {
     'tools.ozone.verification.listVerifications',
   ToolsOzoneVerificationRevokeVerifications:
     'tools.ozone.verification.revokeVerifications',
+  XyzTisocialJournalComment: 'xyz.tisocial.journal.comment',
+  XyzTisocialJournalEntry: 'xyz.tisocial.journal.entry',
+  XyzTisocialJournalShare: 'xyz.tisocial.journal.share',
 } as const
